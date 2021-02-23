@@ -2,3 +2,5 @@ Library/*
 Packages/*
 Temp/*
 Logs/*
+obj/*
+.vs/*
