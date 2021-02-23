@@ -11,8 +11,8 @@ public class Clock : MonoBehaviour
     bool continuous;
 
     const float degreePreHour = 30;
-    const float degreePreMinute = 1;
-    const float degreePreSecond = 1;
+    const float degreePreMinute = 10;
+    const float degreePreSecond = 10;
 
     public void Update()
     {
