@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\ClockScene\Clock.cs" />
+    <Compile Include="Assets\Scripts\FunctionLibrary.cs" />
     <Compile Include="Assets\Scripts\VisualizingMath\Graph.cs" />
     <None Include="Assets\Shader\VisualizingMath\Point Surface.shader" />
     <Reference Include="UnityEngine">

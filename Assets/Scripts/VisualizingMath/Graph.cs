@@ -7,8 +7,11 @@ public class Graph : MonoBehaviour
     [SerializeField]
     Transform pointPrefab;
 
-    [SerializeField, Range(10, 100)]
-    int resolution;
+    [SerializeField, Range(10, 200)]
+    int resolution = 10;
+
+    [SerializeField]
+    FunctionLibrary.FunctionName function = default;
 
     Transform[] points;
 
@@ -17,11 +20,17 @@ public class Graph : MonoBehaviour
         var step = 2f / resolution;
         var scale = Vector3.one * step;
         var position = Vector3.zero;
-        points = new Transform[resolution];
-        for (int i = 0; i < resolution; i++)
+        points = new Transform[resolution * resolution];
+        for (int i = 0, x = 0, z = 0; i < points.Length; i++, x++)
         {
+            if(x == resolution)
+            {
+                x = 0;
+                z++;
+            }
             Transform point = Instantiate(pointPrefab);
-            position.x = (i + .5f) * step - 1f;
+            position.x = (x + .5f) * step - 1f;
+            position.z = (z + .5f) * step - 1f;
             position.y = position.x * position.x;
             point.localPosition = position;
             point.localScale = scale;
@@ -32,12 +41,13 @@ public class Graph : MonoBehaviour
 
     void Update()
     {
+        FunctionLibrary.Function func = FunctionLibrary.GetFunction(function);
         float t = Time.time;
         for (int i = 0; i < points.Length; i++)
         {
             Transform point = points[i];
             Vector3 position = point.localPosition;
-            position.y = Mathf.Sin(Mathf.PI * (position.x + t));
+            position.y = func(position.x, position.z, t);
             point.localPosition = position;
         }
     }
