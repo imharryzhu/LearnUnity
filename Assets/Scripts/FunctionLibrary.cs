@@ -4,7 +4,7 @@ using static UnityEngine.Mathf;
 
 public static class FunctionLibrary
 {
-    public delegate float Function(float x, float z, float y);
+    public delegate Vector3 Function(float u, float v, float t);
 
     static Function[] funcs = { Wave, MutilWave, Ripple };
 
@@ -15,26 +15,36 @@ public static class FunctionLibrary
         return funcs[(int)name];
     }
 
-    public static float Wave(float x, float z, float t)
+    public static Vector3 Wave(float u, float v, float t)
     {
-        return Sin(PI * (x + z + t));
+        Vector3 vec;
+        vec.x = u;
+        vec.y = Sin(PI * (u + v + t));
+        vec.z = v;
+        return vec;
     }
 
-    public static float MutilWave(float x, float z, float t)
+    public static Vector3 MutilWave(float u, float v, float t)
     {
-        var y = Sin(PI * (x + .5f * t));
-        // y += Sin(2f * PI * (x * t)) / 2f;
-        // return y / 1.5f;
-        // 由于除法运算比乘法运算消耗更多计算资源，所以最好改成乘法运算
-        y += Sin(2f * PI * (z + t)) * .5f;
-        y += Sin(PI * (x + z + .25f * t));
-        return y * (1f / 2.5f);
+        Vector3 vec;
+        vec.x = u;
+        vec.z = v;
+        var y = Sin(PI * (u + .5f * t));
+        y += Sin(2f * PI * (v + t)) * .5f;
+        y += Sin(PI * (u + v + .25f * t));
+        y *= (1f / 2.5f);
+        vec.y = y;
+        return vec;
     }
 
-    public static float Ripple(float x, float z, float t)
+    public static Vector3 Ripple(float u, float v, float t)
     {
-        float d = Sqrt(x * x + z * z);
+        float d = Sqrt(u * u + v * v);
         float y = Sin(PI * (4f * d - t));
-        return y / (1f + 10 * d);
+        Vector3 vec;
+        vec.x = u;
+        vec.z = v;
+        vec.y = y / (1f + 10 * d);
+        return vec;
     }
 }

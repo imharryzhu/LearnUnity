@@ -47,7 +47,7 @@ public class Graph : MonoBehaviour
         {
             Transform point = points[i];
             Vector3 position = point.localPosition;
-            position.y = func(position.x, position.z, t);
+            position = func(position.x, position.z, t);
             point.localPosition = position;
         }
     }
