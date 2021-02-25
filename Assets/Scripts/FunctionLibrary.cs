@@ -17,7 +17,7 @@ public static class FunctionLibrary
 
     public static float Wave(float x, float z, float t)
     {
-        return Sin(PI * (x + t));
+        return Sin(PI * (x + z + t));
     }
 
     public static float MutilWave(float x, float z, float t)
@@ -26,13 +26,14 @@ public static class FunctionLibrary
         // y += Sin(2f * PI * (x * t)) / 2f;
         // return y / 1.5f;
         // 由于除法运算比乘法运算消耗更多计算资源，所以最好改成乘法运算
-        y += Sin(2f * PI * (x + t)) * .5f;
-        return y * (2f / 3f);
+        y += Sin(2f * PI * (z + t)) * .5f;
+        y += Sin(PI * (x + z + .25f * t));
+        return y * (1f / 2.5f);
     }
 
     public static float Ripple(float x, float z, float t)
     {
-        float d = Abs(x);
+        float d = Sqrt(x * x + z * z);
         float y = Sin(PI * (4f * d - t));
         return y / (1f + 10 * d);
     }
