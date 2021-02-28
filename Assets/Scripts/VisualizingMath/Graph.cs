@@ -13,8 +13,19 @@ public class Graph : MonoBehaviour
     [SerializeField]
     FunctionLibrary.FunctionName functionName = default;
 
+    /// <summary>
+    /// 函数切换模式，线性、随机
+    /// </summary>
+    [SerializeField]
+    TransitionMode transitionMode = TransitionMode.Cycle;
+
+    /// <summary>
+    /// 函数切换的时间间隔
+    /// </summary>
     [SerializeField, Min(0.3f)]
     float functionDuration = 1f;
+
+    public enum TransitionMode { Cycle, Random }
 
     Transform[] points;
 
@@ -41,7 +52,7 @@ public class Graph : MonoBehaviour
         if (duration >= functionDuration)
         {
             duration -= functionDuration;
-            functionName = FunctionLibrary.GetNextFunctionName(functionName);
+            PickNextFunction();
         }
         UpdateFunction();
     }
@@ -63,5 +74,12 @@ public class Graph : MonoBehaviour
             float u = (x + .5f) * step - 1f;
             points[i].localPosition = func(u, v, t);
         }
+    }
+
+    void PickNextFunction()
+    {
+        functionName = transitionMode == TransitionMode.Cycle ?
+                FunctionLibrary.GetNextFunctionName(functionName) :
+                FunctionLibrary.GetRandomFunctionNameOtherThan(functionName);
     }
 }

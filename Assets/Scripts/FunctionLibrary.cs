@@ -75,4 +75,15 @@ public static class FunctionLibrary
     {
         return (int)name < funcs.Length - 1 ? name + 1 : 0;
     }
+
+    /// <summary>
+    /// 获取随机函数，遇到重复则选择第0个索引的方法
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public static FunctionName GetRandomFunctionNameOtherThan(FunctionName name)
+    {
+        var choice =  (FunctionName)Random.Range(1, funcs.Length);
+        return choice == name ? 0 : choice;
+    }
 }
