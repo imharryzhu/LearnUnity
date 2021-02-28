@@ -64,7 +64,5 @@ public class FrameRateCounter : MonoBehaviour
             bestDuration = float.MaxValue;
             worstDuration = 0;
         }
-        
     }
-
 }

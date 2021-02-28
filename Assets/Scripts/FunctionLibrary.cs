@@ -86,4 +86,11 @@ public static class FunctionLibrary
         var choice =  (FunctionName)Random.Range(1, funcs.Length);
         return choice == name ? 0 : choice;
     }
+
+    public static Vector3 Morph(float u, float v, float t, Function from, Function to, float progress)
+    {
+        // Lerp是线性插值计算
+        return Vector3.Lerp(from(u, v, t), to(u, v, t), SmoothStep(0, 1, progress));
+    }
+
 }
