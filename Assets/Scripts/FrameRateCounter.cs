@@ -8,9 +8,21 @@ public class FrameRateCounter : MonoBehaviour
     [SerializeField, Range(0.1f, 2f)]
     float sampleDuration = 1f;
 
+    [SerializeField]
+    DisplayMode displayMode = DisplayMode.FPS;
+
     TextMeshProUGUI display;
 
-    float duration = 0, frame = 0;
+    public enum DisplayMode { FPS, MS }
+
+    // 持续时间
+    float duration = 0;
+    // 最长持续时间
+    float worstDuration = 0;
+    // 最短持续时间
+    float bestDuration = float.MaxValue;
+    // 持续帧数
+    float frame = 0;
 
     void Awake()
     {
@@ -24,11 +36,33 @@ public class FrameRateCounter : MonoBehaviour
         float frameDuration = Time.unscaledDeltaTime;
         duration += Time.unscaledDeltaTime;
         frame++;
+
+        if (frameDuration < bestDuration)
+            bestDuration = frameDuration;
+        if (frameDuration > worstDuration)
+            worstDuration = frameDuration;
+
         if (duration >= sampleDuration)
         {
-            display.SetText("FPS\n{0:0}\n000\n000", frame / duration);
+            if (displayMode == DisplayMode.FPS)
+            {
+                display.SetText("FPS\n{0:0}\n{1:0}\n{2:0}",
+                    frame / duration,
+                    1 / bestDuration,
+                    1 / worstDuration);
+            }
+            else
+            {
+                display.SetText("FPS\n{0:1}\n{1:1}\n{2:1}",
+                    duration / frame * 1000f,
+                    bestDuration * 1000f,
+                    worstDuration * 1000f);
+            }
+            
             frame = 0;
             duration = 0;
+            bestDuration = float.MaxValue;
+            worstDuration = 0;
         }
         
     }
