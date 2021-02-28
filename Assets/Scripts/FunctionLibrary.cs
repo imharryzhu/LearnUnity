@@ -70,4 +70,9 @@ public static class FunctionLibrary
         vec.z = s * Cos(PI * u);
         return vec;
     }
+
+    public static FunctionName GetNextFunctionName(FunctionName name)
+    {
+        return (int)name < funcs.Length - 1 ? name + 1 : 0;
+    }
 }
