@@ -628,10 +628,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 412df7f5bea1a4fd49eb899b167f2767, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resolution: 91
+  computerShader: {fileID: 7200000, guid: 0f2097f0443ac456ea50e5b6a89ea0f8, type: 3}
+  material: {fileID: 2100000, guid: c30e6ef47c6a247bc86908c3d9e24770, type: 2}
+  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  resolution: 500
   functionName: 0
   transitionMode: 0
-  functionDuration: 1
+  functionDuration: 3
   transitionDuration: 1
 --- !u!4 &1662839330
 Transform:

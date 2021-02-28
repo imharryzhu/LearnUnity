@@ -1,9 +1,8 @@
-﻿#pragma kernel FunctionKernel
-#define PI 3.14159265358979323846
+﻿#define PI 3.14159265358979323846
 
 RWStructuredBuffer<float3> _Positions;
 uint _Resolution;
-float _Step, _Time;
+float _Step, _Time, _TransitionProgress;
 
 float2 GetUV(uint3 id) {
     return (id.xy + 0.5) * _Step - 1.0;
@@ -20,11 +19,132 @@ float3 Wave(float u, float v, float t) {
     p.x = u;
     p.y = sin(PI * (u + v + t));
     p.z = v;
-    return p;
+    return p; 
 }
 
-[numthreads(8, 8, 1)]
-void FunctionKernel(uint3 id:SV_DispatchThreadID) {
-    float2 uv = GetUV(id);
-    SetPosition(id, Wave(uv.x, uv.y, _Time));
+float3 MutilWave(float u, float v, float t)
+{
+    float3 vec;
+    vec.x = u;
+    vec.z = v;
+    float y = sin(PI * (u + 0.5 * t));
+    y += sin(2.0 * PI * (v + t)) * 0.5;
+    y += sin(PI * (u + v + 0.25f * t));
+    y *= (1.0 / 2.5);
+    vec.y = y;
+    return vec;
 }
+
+float3 Ripple(float u, float v, float t)
+{
+    float d = sqrt(u * u + v * v);
+    float y = sin(PI * (4.0 * d - t));
+    float3 vec;
+    vec.x = u;
+    vec.z = v;
+    vec.y = y / (1.0 + 10.0 * d);
+    return vec;
+}
+
+float3 Sphere(float u, float v, float t)
+{
+    float r = 0.9 + 0.1 * sin(PI * (12.0 * u + 8.0 * v + t));
+    float s = r * cos(0.5 * PI * v);
+    float3 vec;
+    vec.x = s * sin(PI * u);
+    vec.y = r * sin(PI * 0.5 * v);
+    vec.z = s * cos(PI * u);
+    return vec;
+}
+
+float3 Torus(float u, float v, float t)
+{
+    float r1 = 0.7 + 0.1 * sin(PI * (8.0 * u  + 0.5 * t));
+    float r2 = .15 + 0.05 * sin(PI * (16.0 * u + 8.0 * v + 3.0 * t));
+    float s = r1 + r2 * cos(PI * v);
+    float3 vec;
+    vec.x = s * sin(PI * u);
+    vec.y = r2 * sin(PI * v);
+    vec.z = s * cos(PI * u);
+    return vec;
+}
+
+#define KERNEL_FUNCTION(function) \
+    [numthreads(8, 8, 1)] \
+    void function##Kernel(uint3 id:SV_DispatchThreadID) { \
+        float2 uv = GetUV(id); \
+        SetPosition(id, function(uv.x, uv.y, _Time)); \
+    }
+
+#define KERNEL_MOPH_FUNCTION(funcA, funcB) \
+    [numthreads(8, 8, 1)] \
+    void funcA##To##funcB##Kernel(uint3 id:SV_DispatchThreadID) { \
+        float2 uv = GetUV(id); \
+        float3 position = lerp( \
+            funcA(uv.x, uv.y, _Time), funcB(uv.x, uv.y, _Time), \
+            _TransitionProgress \
+        ); \
+        SetPosition(id, position); \
+    }
+
+KERNEL_FUNCTION(Wave)
+KERNEL_FUNCTION(MutilWave)
+KERNEL_FUNCTION(Ripple)
+KERNEL_FUNCTION(Sphere)
+KERNEL_FUNCTION(Torus)
+
+
+KERNEL_MOPH_FUNCTION(Wave, MutilWave)
+KERNEL_MOPH_FUNCTION(Wave, Ripple)
+KERNEL_MOPH_FUNCTION(Wave, Sphere)
+KERNEL_MOPH_FUNCTION(Wave, Torus)
+
+KERNEL_MOPH_FUNCTION(MutilWave, Wave)
+KERNEL_MOPH_FUNCTION(MutilWave, Ripple)
+KERNEL_MOPH_FUNCTION(MutilWave, Sphere)
+KERNEL_MOPH_FUNCTION(MutilWave, Torus)
+
+KERNEL_MOPH_FUNCTION(Ripple, Wave)
+KERNEL_MOPH_FUNCTION(Ripple, MutilWave)
+KERNEL_MOPH_FUNCTION(Ripple, Sphere)
+KERNEL_MOPH_FUNCTION(Ripple, Torus)
+
+KERNEL_MOPH_FUNCTION(Sphere, Wave)
+KERNEL_MOPH_FUNCTION(Sphere, MutilWave)
+KERNEL_MOPH_FUNCTION(Sphere, Ripple)
+KERNEL_MOPH_FUNCTION(Sphere, Torus)
+
+KERNEL_MOPH_FUNCTION(Torus, Wave)
+KERNEL_MOPH_FUNCTION(Torus, MutilWave)
+KERNEL_MOPH_FUNCTION(Torus, Ripple)
+KERNEL_MOPH_FUNCTION(Torus, Sphere)
+
+#pragma kernel WaveKernel
+#pragma kernel WaveToMutilWaveKernel
+#pragma kernel WaveToRippleKernel
+#pragma kernel WaveToSphereKernel
+#pragma kernel WaveToTorusKernel
+
+#pragma kernel MutilWaveToWaveKernel
+#pragma kernel MutilWaveKernel
+#pragma kernel MutilWaveToRippleKernel
+#pragma kernel MutilWaveToSphereKernel
+#pragma kernel MutilWaveToTorusKernel
+
+#pragma kernel RippleToWaveKernel
+#pragma kernel RippleToMutilWaveKernel
+#pragma kernel RippleKernel
+#pragma kernel RippleToSphereKernel
+#pragma kernel RippleToTorusKernel
+
+#pragma kernel SphereToWaveKernel
+#pragma kernel SphereToMutilWaveKernel
+#pragma kernel SphereToRippleKernel
+#pragma kernel SphereKernel
+#pragma kernel SphereToTorusKernel
+
+#pragma kernel TorusToWaveKernel
+#pragma kernel TorusToMutilWaveKernel
+#pragma kernel TorusToRippleKernel
+#pragma kernel TorusToSphereKernel
+#pragma kernel TorusKernel

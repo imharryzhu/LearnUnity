@@ -15,6 +15,9 @@ public static class FunctionLibrary
         return funcs[(int)name];
     }
 
+    // getter属性的简化写法
+    public static int FunctionsCount => funcs.Length;
+
     public static Vector3 Wave(float u, float v, float t)
     {
         Vector3 vec;
@@ -92,5 +95,4 @@ public static class FunctionLibrary
         // Lerp是线性插值计算
         return Vector3.Lerp(from(u, v, t), to(u, v, t), SmoothStep(0, 1, progress));
     }
-
 }

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GPUGraph : MonoBehaviour
 {
+    const int maxResolution = 1000;
+
     [SerializeField]
     ComputeShader computerShader = default;
 
@@ -13,7 +15,7 @@ public class GPUGraph : MonoBehaviour
     [SerializeField]
     Mesh mesh = default;
 
-    [SerializeField, Range(10, 1000)]
+    [SerializeField, Range(10, maxResolution)]
     int resolution = 10;
 
     [SerializeField]
@@ -51,7 +53,8 @@ public class GPUGraph : MonoBehaviour
         resolutionId = Shader.PropertyToID("_Resolution"),
         stepId = Shader.PropertyToID("_Step"),
         timeId = Shader.PropertyToID("_Time"),
-        scaleId = Shader.PropertyToID("_Scale");
+        scaleId = Shader.PropertyToID("_Scale"),
+        transitionProgressId = Shader.PropertyToID("_TransitionProgress");
 
     FunctionLibrary.FunctionName transitionFromFunc;
 
@@ -59,7 +62,7 @@ public class GPUGraph : MonoBehaviour
 
     void OnEnable()
     {
-        positionsBuffer = new ComputeBuffer(resolution * resolution, 3 * 4);
+        positionsBuffer = new ComputeBuffer(maxResolution * maxResolution, 3 * 4);
     }
 
     void OnDisable()
@@ -103,9 +106,18 @@ public class GPUGraph : MonoBehaviour
         computerShader.SetFloat(stepId, step);
         computerShader.SetFloat(timeId, Time.time);
 
-        computerShader.SetBuffer(0, positionsId, positionsBuffer);
+        if (transitioning)
+        {
+            computerShader.SetFloat(
+                transitionProgressId,
+                Mathf.SmoothStep(0f, 1f, duration / transitionDuration)
+            );
+        }
+
+        var kernelIndex = (int)functionName + (int)(transitioning ? transitionFromFunc : functionName) * FunctionLibrary.FunctionsCount;
+        computerShader.SetBuffer(kernelIndex, positionsId, positionsBuffer);
         int groups = Mathf.CeilToInt(resolution / 8f);
-        computerShader.Dispatch(0, groups, groups, 1);
+        computerShader.Dispatch(kernelIndex, groups, groups, 1);
 
         material.SetBuffer(positionsId, positionsBuffer);
         material.SetVector(scaleId, new Vector4(step, 1f / step));
