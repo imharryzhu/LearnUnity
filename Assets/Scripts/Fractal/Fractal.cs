@@ -4,46 +4,120 @@ using UnityEngine;
 
 public class Fractal : MonoBehaviour
 {
+    [SerializeField]
+    Mesh mesh = default;
+
+    [SerializeField]
+    Material material = default;
+
     // 分形的最大深度
     [SerializeField, Range(1, 8)]
     int depth = 4;
 
-    // 使用Start而非Awake，因为Start在创建下一帧执行
-    void Start()
+    // 存储方向信息
+    static Vector3[] directions =
     {
-        // name属性设置该物体名称
-        name = "Fractal" + depth;
+        Vector3.up, Vector3.right, Vector3.left, Vector3.forward, Vector3.back
+    };
 
-        if (depth <= 1)
+    // 存储旋转角度信息
+    static Quaternion[] rotations =
+    {
+        Quaternion.identity,
+        Quaternion.Euler(0, 0, -90),
+        Quaternion.Euler(0, 0, 90),
+        Quaternion.Euler(90, 0, 0),
+        Quaternion.Euler(-90, 0, 0)
+    };
+
+    struct FractalPart
+    {
+        public Vector3 direction;
+        public Quaternion rotation;
+        public Transform transform;
+    }
+
+    // 存储part的二维数组
+    FractalPart[][] parts;
+
+    void Awake()
+    {
+        parts = new FractalPart[depth][];
+        for(int i = 0, len = 1; i < depth; ++i, len *= 5)
         {
-            return;
+            parts[i] = new FractalPart[len];
         }
 
-        var childA = CreateChild(Vector3.up, Quaternion.identity);
-        var childB = CreateChild(Vector3.right, Quaternion.Euler(0, 0, -90));
-        var childC = CreateChild(Vector3.left, Quaternion.Euler(0, 0, 90));
-        var childD = CreateChild(Vector3.forward, Quaternion.Euler(90, 0, 0));
-        var childE = CreateChild(Vector3.back, Quaternion.Euler(-90, 0, 0));
-        
-        childA.transform.SetParent(transform, false);
-        childB.transform.SetParent(transform, false);
-        childC.transform.SetParent(transform, false);
-        childD.transform.SetParent(transform, false);
-        childE.transform.SetParent(transform, false);
+        /*       长度
+         *  深度0  1
+         *  深度1  5
+         *  深度2  25
+         *  深度3  125
+         */
+
+        float scale = 1;
+        // 创建根节点
+        parts[0][0] = CreatePart(0, 0, scale);
+        // 创建所有子节点
+        for(int li = 1; li < depth; li++)
+        {
+            // 每下一层，缩放比例就减小一半
+            scale *= 0.5f;
+            // 拿到那层的数组
+            var levelParts = parts[li];
+            for (int fpi = 0; fpi < levelParts.Length; fpi += 5)
+            {
+                for(int ci = 0; ci < 5; ci++)
+                {
+                    levelParts[fpi + ci] = CreatePart(li, ci, scale);
+                }
+            }
+        }
     }
 
     void Update()
     {
-        transform.Rotate(0, 22.5f * Time.deltaTime, 0);    
+        Quaternion deltaRotation = Quaternion.Euler(0, 22.5f * Time.deltaTime, 0);
+
+        // 旋转根节点
+        var rootPart = parts[0][0];
+        rootPart.rotation *= deltaRotation;
+        rootPart.transform.localRotation = rootPart.rotation;
+        parts[0][0] = rootPart;
+
+        for (int li = 1; li < depth; li++)
+        {
+            var parentParts = parts[li - 1];
+            var levelParts = parts[li];
+            for (int fpi = 0; fpi < levelParts.Length; fpi++)
+            {
+                var parentTransform = parentParts[fpi / 5].transform;
+                var part = levelParts[fpi];
+                part.rotation *= deltaRotation;
+                part.transform.localPosition =
+                    parentTransform.localPosition +
+                    parentTransform.localRotation *
+                        (1.5f * part.transform.localScale.x * part.direction);
+                // 四元数的乘法顺序：parent-child
+                part.transform.localRotation =
+                    parentTransform.localRotation * part.rotation;
+                levelParts[fpi] = part;
+            }
+        }
     }
 
-    Fractal CreateChild(Vector3 direction, Quaternion rotation)
+    FractalPart CreatePart(int levelIndex, int childIndex, float scale)
     {
-        Fractal child = Instantiate(this);
-        child.depth -= 1;
-        child.transform.localPosition = 0.75f * direction;
-        child.transform.localScale = 0.5f * Vector3.one;
-        child.transform.localRotation = rotation;
-        return child;
+        var go = new GameObject("Fractal Part L" + levelIndex + " C" + childIndex);
+        go.transform.SetParent(this.transform, false);
+        go.transform.localScale = Vector3.one * scale;
+        go.AddComponent<MeshFilter>().mesh = mesh;
+        go.AddComponent<MeshRenderer>().material = material;
+
+        return new FractalPart {
+            direction = directions[childIndex],
+            rotation = rotations[childIndex],
+            transform = go.transform
+        };
     }
 }
