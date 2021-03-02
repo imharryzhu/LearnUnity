@@ -32,20 +32,24 @@ public class Fractal : MonoBehaviour
 
     struct FractalPart
     {
-        public Vector3 direction;
-        public Quaternion rotation;
-        public Transform transform;
+        public Vector3 direction, worldPosition;
+        public Quaternion rotation, worldRotation;
     }
 
     // 存储part的二维数组
     FractalPart[][] parts;
 
+    // 用于渲染的变换矩阵数组
+    Matrix4x4[][] matrices;
+
     void Awake()
     {
         parts = new FractalPart[depth][];
-        for(int i = 0, len = 1; i < depth; ++i, len *= 5)
+        matrices = new Matrix4x4[depth][];
+        for (int i = 0, len = 1; i < depth; ++i, len *= 5)
         {
             parts[i] = new FractalPart[len];
+            matrices[i] = new Matrix4x4[len];
         }
 
         /*       长度
@@ -55,21 +59,28 @@ public class Fractal : MonoBehaviour
          *  深度3  125
          */
 
-        float scale = 1;
         // 创建根节点
-        parts[0][0] = CreatePart(0, 0, scale);
+        var rootPart = CreatePart(0);
+        parts[0][0] = rootPart;
+        // 根节点的变换矩阵
+        // 平移-旋转-缩放 Translation-Rotation-Scale
+        var mat4 = Matrix4x4.TRS(
+           rootPart.worldPosition,
+           rootPart.worldRotation,
+           Vector3.one
+        );
+        matrices[0][0] = mat4;
+
         // 创建所有子节点
-        for(int li = 1; li < depth; li++)
+        for (int li = 1; li < depth; li++)
         {
-            // 每下一层，缩放比例就减小一半
-            scale *= 0.5f;
             // 拿到那层的数组
             var levelParts = parts[li];
             for (int fpi = 0; fpi < levelParts.Length; fpi += 5)
             {
                 for(int ci = 0; ci < 5; ci++)
                 {
-                    levelParts[fpi + ci] = CreatePart(li, ci, scale);
+                    levelParts[fpi + ci] = CreatePart(ci);
                 }
             }
         }
@@ -82,42 +93,36 @@ public class Fractal : MonoBehaviour
         // 旋转根节点
         var rootPart = parts[0][0];
         rootPart.rotation *= deltaRotation;
-        rootPart.transform.localRotation = rootPart.rotation;
+        rootPart.worldRotation = rootPart.rotation;
         parts[0][0] = rootPart;
 
+        float scale = 1;
         for (int li = 1; li < depth; li++)
         {
+            // 每下一层，缩放比例就减小一半
+            scale *= .5f;
             var parentParts = parts[li - 1];
             var levelParts = parts[li];
+            var levelMat4 = matrices[li];
             for (int fpi = 0; fpi < levelParts.Length; fpi++)
             {
-                var parentTransform = parentParts[fpi / 5].transform;
+                var parentPart = parentParts[fpi / 5];
                 var part = levelParts[fpi];
                 part.rotation *= deltaRotation;
-                part.transform.localPosition =
-                    parentTransform.localPosition +
-                    parentTransform.localRotation *
-                        (1.5f * part.transform.localScale.x * part.direction);
-                // 四元数的乘法顺序：parent-child
-                part.transform.localRotation =
-                    parentTransform.localRotation * part.rotation;
+                part.worldRotation = parentPart.worldRotation * part.rotation;
+                part.worldPosition = parentPart.worldPosition +
+                    parentPart.worldRotation *
+                    (1.5f * scale * part.direction);
                 levelParts[fpi] = part;
             }
         }
     }
 
-    FractalPart CreatePart(int levelIndex, int childIndex, float scale)
+    FractalPart CreatePart(int childIndex)
     {
-        var go = new GameObject("Fractal Part L" + levelIndex + " C" + childIndex);
-        go.transform.SetParent(this.transform, false);
-        go.transform.localScale = Vector3.one * scale;
-        go.AddComponent<MeshFilter>().mesh = mesh;
-        go.AddComponent<MeshRenderer>().material = material;
-
         return new FractalPart {
             direction = directions[childIndex],
-            rotation = rotations[childIndex],
-            transform = go.transform
+            rotation = rotations[childIndex]
         };
     }
 }
