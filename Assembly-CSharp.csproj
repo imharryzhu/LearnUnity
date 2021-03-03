@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\ClockScene\Clock.cs" />
     <Compile Include="Assets\Scripts\Fractal\Fractal.cs" />
+    <Compile Include="Assets\Scripts\PlayerControlledMotion\MoveSphere.cs" />
     <Compile Include="Assets\Scripts\VisualizingMath\FrameRateCounter.cs" />
     <Compile Include="Assets\Scripts\VisualizingMath\FunctionLibrary.cs" />
     <Compile Include="Assets\Scripts\VisualizingMath\GPUGraph.cs" />
