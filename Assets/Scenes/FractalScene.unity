@@ -325,9 +325,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d4e8390115d7f243a8757339680aec8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  material: {fileID: 2100000, guid: ef944c291c5104df3ad3078d77d805ef, type: 2}
-  depth: 7
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  material: {fileID: 2100000, guid: 92005b85f3650e24db661505deaee153, type: 2}
+  depth: 4
 --- !u!4 &2109469240
 Transform:
   m_ObjectHideFlags: 0

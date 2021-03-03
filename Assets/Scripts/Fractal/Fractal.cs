@@ -50,6 +50,8 @@ public class Fractal : MonoBehaviour
 
     ComputeBuffer[] matricesBuffers;
 
+    static MaterialPropertyBlock propertyBlock;
+
     // 将Awake改为OnEnable，为了在OnDisable时释放缓冲区
     void OnEnable()
     {
@@ -88,6 +90,11 @@ public class Fractal : MonoBehaviour
                 }
             }
         }
+
+        if (propertyBlock == null)
+        {
+            propertyBlock = new MaterialPropertyBlock();
+        }
     }
 
     // 需要Disable时释放缓冲区
@@ -121,18 +128,21 @@ public class Fractal : MonoBehaviour
         var rootPart = parts[0][0];
         // rootPart.rotation *= deltaRotation;
         rootPart.angle += angleDelta;
-        rootPart.worldRotation = rootPart.rotation;
+        rootPart.worldRotation = transform.rotation *
+            (rootPart.rotation * Quaternion.Euler(0, rootPart.angle, 0));
+        rootPart.worldPosition = transform.position;
         parts[0][0] = rootPart;
         // 根节点的变换矩阵
         // 平移-旋转-缩放 Translation-Rotation-Scale
+        float objectScale = transform.lossyScale.x;
         var mat4 = Matrix4x4.TRS(
            rootPart.worldPosition,
            rootPart.worldRotation,
-           Vector3.one
+           Vector3.one * objectScale
         );
         matrices[0][0] = mat4;
 
-        float scale = 1;
+        float scale = objectScale;
         for (int li = 1; li < depth; li++)
         {
             // 每下一层，缩放比例就减小一半
@@ -145,8 +155,8 @@ public class Fractal : MonoBehaviour
             {
                 var parentPart = parentParts[fpi / 5];
                 var part = levelParts[fpi];
-                part.rotation *= Quaternion.Euler(0, part.angle, 0); ;
-                part.worldRotation = parentPart.worldRotation * part.rotation;
+                part.angle += angleDelta;
+                part.worldRotation = parentPart.worldRotation * (part.rotation * Quaternion.Euler(0, part.angle, 0));
                 part.worldPosition = parentPart.worldPosition +
                     parentPart.worldRotation *
                     (1.5f * scale * part.direction);
@@ -160,13 +170,13 @@ public class Fractal : MonoBehaviour
             }
         }
 
-        var bounds = new Bounds(Vector3.zero, 3 * Vector3.one);
+        var bounds = new Bounds(rootPart.worldPosition, 3 * objectScale * Vector3.one);
         for (int i = 0; i < matricesBuffers.Length; i++)
         {
             var buffer = matricesBuffers[i];
             buffer.SetData(matrices[i]);
-            material.SetBuffer(matricesId, buffer);
-            Graphics.DrawMeshInstancedProcedural(mesh, 0, material, bounds, buffer.count);
+            propertyBlock.SetBuffer(matricesId, buffer);
+            Graphics.DrawMeshInstancedProcedural(mesh, 0, material, bounds, buffer.count, propertyBlock);
         }
     }
 

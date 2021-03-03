@@ -37,7 +37,7 @@
         float _Smoothness;
 
         void ConfigureSurface(Input input, inout SurfaceOutputStandard surface) {
-            surface.Albedo = _Color.rgb;
+            surface.Albedo = saturate(input.worldPos * .5 + .5);
             surface.Smoothness = _Smoothness;
         }
         ENDCG
