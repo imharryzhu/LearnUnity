@@ -1,6 +1,6 @@
-Library/*
-Packages/*
-Temp/*
-Logs/*
-obj/*
-.vs/*
+**/Library/*
+**/Packages/*
+**/Temp/*
+**/Logs/*
+**/obj/*
+**/.vs/*
