@@ -41,7 +41,7 @@ public class MoveSphere : MonoBehaviour
         {
             velocity.z = Mathf.Min(velocity.z + maxSpeedChange, desiredVelocity.z);
         }
-        else if (velocity.y > desiredVelocity.z)
+        else if (velocity.z > desiredVelocity.z)
         {
             velocity.z = Mathf.Max(velocity.z - maxSpeedChange, desiredVelocity.z);
         }
