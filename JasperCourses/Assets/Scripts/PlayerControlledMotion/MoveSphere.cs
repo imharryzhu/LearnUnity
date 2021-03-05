@@ -10,6 +10,9 @@ public class MoveSphere : MonoBehaviour
     [SerializeField, Range(0f, 100f), Tooltip("每秒最大加速度")]
     float maxAcceleration = 10f;
 
+    [SerializeField, Tooltip("可移动区域")]
+    Rect allowedArea = new Rect(-4.5f, -.45f, 9f, 9f);
+
     // 实际速度
     Vector3 velocity;
 
@@ -26,25 +29,41 @@ public class MoveSphere : MonoBehaviour
         Vector3 desiredVelocity = maxSpeed * new Vector3(playerInput.x, 0f, playerInput.y);
         // 这帧最大的加速度
         float maxSpeedChange = maxAcceleration * Time.deltaTime;
-        // 实际速度小于理论速度，就需要加速度
-        if (velocity.x < desiredVelocity.x)
+
+        // 将值 current 向 target 靠近
+        velocity.x = Mathf.MoveTowards(velocity.x, velocity.x + desiredVelocity.x, maxSpeedChange);
+        velocity.z = Mathf.MoveTowards(velocity.z, velocity.z + desiredVelocity.z, maxSpeedChange);
+
+        Vector3 newPosition = transform.localPosition + velocity * Time.deltaTime;
+        // 增加限制区域判断，仅仅判断边缘是不够的，还需要将碰壁之后的速度清掉
+        //if (!allowedArea.Contains(new Vector2(newPosition.x, newPosition.z)))
+        //{
+        //    newPosition.x = Mathf.Clamp(newPosition.x, allowedArea.xMin, allowedArea.xMax);
+        //    newPosition.z = Mathf.Clamp(newPosition.z, allowedArea.yMin, allowedArea.yMax);
+        //}
+
+        if (newPosition.x < allowedArea.xMin)
         {
-            velocity.x = Mathf.Min(velocity.x + maxSpeedChange, desiredVelocity.x);
+            newPosition.x = allowedArea.xMin;
+            velocity.x = 0;
         }
-        // 实际速度大于理论速度，就只能采用理论速度了
-        else if (velocity.x > desiredVelocity.x)
+        else if (newPosition.x > allowedArea.xMax)
         {
-            velocity.x = Mathf.Max(velocity.x - maxSpeedChange, desiredVelocity.x);
+            newPosition.x = allowedArea.xMax;
+            velocity.x = 0;
         }
 
-        if (velocity.z < desiredVelocity.z)
+        if (newPosition.z < allowedArea.yMin)
         {
-            velocity.z = Mathf.Min(velocity.z + maxSpeedChange, desiredVelocity.z);
+            newPosition.z = allowedArea.yMin;
+            velocity.z = 0;
         }
-        else if (velocity.z > desiredVelocity.z)
+        else if (newPosition.z > allowedArea.yMax)
         {
-            velocity.z = Mathf.Max(velocity.z - maxSpeedChange, desiredVelocity.z);
+            newPosition.z = allowedArea.yMax;
+            velocity.z = 0;
         }
-        transform.localPosition += velocity * Time.deltaTime; ;
+
+        transform.localPosition = newPosition;
     }
 }
