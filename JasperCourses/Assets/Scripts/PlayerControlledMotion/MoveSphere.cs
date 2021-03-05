@@ -13,6 +13,9 @@ public class MoveSphere : MonoBehaviour
     [SerializeField, Tooltip("可移动区域")]
     Rect allowedArea = new Rect(-4.5f, -.45f, 9f, 9f);
 
+    [SerializeField, Range(0f, 1f), Tooltip("球的弹性")]
+    float bounciness = 0.5f;
+
     // 实际速度
     Vector3 velocity;
 
@@ -45,23 +48,23 @@ public class MoveSphere : MonoBehaviour
         if (newPosition.x < allowedArea.xMin)
         {
             newPosition.x = allowedArea.xMin;
-            velocity.x = 0;
+            velocity.x = -velocity.x * bounciness;
         }
         else if (newPosition.x > allowedArea.xMax)
         {
             newPosition.x = allowedArea.xMax;
-            velocity.x = 0;
+            velocity.x = -velocity.x * bounciness;
         }
 
         if (newPosition.z < allowedArea.yMin)
         {
             newPosition.z = allowedArea.yMin;
-            velocity.z = 0;
+            velocity.z = -velocity.z * bounciness;
         }
         else if (newPosition.z > allowedArea.yMax)
         {
             newPosition.z = allowedArea.yMax;
-            velocity.z = 0;
+            velocity.z = -velocity.z * bounciness;
         }
 
         transform.localPosition = newPosition;
