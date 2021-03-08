@@ -19,10 +19,13 @@ public class MoveSpherePhysics : MonoBehaviour
     float maxSpeed = 10f;
 
     [SerializeField, Range(0f, 100f), Tooltip("每秒最大加速度")]
-    float maxAcceleration = 10f;
+    float maxAcceleration = 10f, maxAirAcceleration = 1f;
 
     [SerializeField, Range(0f, 10f), Tooltip("跳跃高度")]
     float jumpHeight = 2f;
+
+    [SerializeField, Range(0, 10), Tooltip("在空中跳跃的最大次数")]
+    int maxAirJumps = 2;
 
     // 实际速度
     Vector3 velocity, desiredVelocity;
@@ -34,6 +37,9 @@ public class MoveSpherePhysics : MonoBehaviour
 
     // 是否在地面上，无法在update中判断球是否落地，所以用碰撞检测来判断
     bool isOnGround;
+
+    // 记录当前有几次跳跃
+    int jumpCount;
 
     void Awake()
     {
@@ -58,9 +64,10 @@ public class MoveSpherePhysics : MonoBehaviour
 
     void FixedUpdate()
     {
-        velocity = rigidBody.velocity;
+        UpdateState();
         // 这帧最大的加速度
-        float maxSpeedChange = maxAcceleration * Time.deltaTime;
+        float acceleration = isOnGround ? maxAcceleration : maxAirAcceleration;
+        float maxSpeedChange = acceleration * Time.deltaTime;
 
         // 将值 current 向 target 靠近
         velocity.x = Mathf.MoveTowards(velocity.x, velocity.x + desiredVelocity.x, maxSpeedChange);
@@ -78,20 +85,55 @@ public class MoveSpherePhysics : MonoBehaviour
         isOnGround = false;
     }
 
+    void UpdateState()
+    {
+        velocity = rigidBody.velocity;
+        if (isOnGround)
+            jumpCount = 0;
+    }
+
     void Jump()
     {
-        if (isOnGround)
-            velocity.y += Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
+        if (isOnGround || jumpCount < maxAirJumps)
+        {
+            jumpCount++;
+            float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
+
+            // 减去之前的y分量，防止连续跳跃导致高度不一致的问题
+            if (velocity.y > 0f)
+            {
+                jumpSpeed = Mathf.Max(jumpSpeed - velocity.y, 0);
+            }
+
+            velocity.y += jumpSpeed;
+        }
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        isOnGround = true;
+        EvaluteCollision(collision);
     }
 
     // 只要碰撞一直存在
     void OnCollisionStay(Collision collision)
     {
-        isOnGround = true;
+        EvaluteCollision(collision);
+    }
+
+    void EvaluteCollision(Collision collision)
+    {
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            ContactPoint contactPoint = collision.GetContact(i);
+            // 获取接触点的法线
+            Vector3 normal = contactPoint.normal;
+            
+            Vector3 a = transform.position;
+            Vector3 b = transform.TransformPoint(contactPoint.normal);
+            Debug.DrawLine(a, b, Color.green);
+
+            // 接近与垂直，代表与地面接触
+            isOnGround |= normal.y >= 0.9f;
+        }
     }
 }
