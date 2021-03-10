@@ -19,13 +19,19 @@ public class MoveSpherePhysics : MonoBehaviour
     float maxSpeed = 10f;
 
     [SerializeField, Range(0f, 100f), Tooltip("每秒最大加速度")]
-    float maxAcceleration = 10f, maxAirAcceleration = 1f;
+    float maxAcceleration = 10f;
+
+    [SerializeField, Range(0f, 100f), Tooltip("在空中的最大加速度")]
+    float maxAirAcceleration = 1f;
 
     [SerializeField, Range(0f, 10f), Tooltip("跳跃高度")]
     float jumpHeight = 2f;
 
     [SerializeField, Range(0, 10), Tooltip("在空中跳跃的最大次数")]
     int maxAirJumps = 2;
+
+    [SerializeField, Range(0, 90)]
+    float maxGroundAngle = 25f;
 
     // 实际速度
     Vector3 velocity, desiredVelocity;
@@ -70,8 +76,8 @@ public class MoveSpherePhysics : MonoBehaviour
         float maxSpeedChange = acceleration * Time.deltaTime;
 
         // 将值 current 向 target 靠近
-        velocity.x = Mathf.MoveTowards(velocity.x, velocity.x + desiredVelocity.x, maxSpeedChange);
-        velocity.z = Mathf.MoveTowards(velocity.z, velocity.z + desiredVelocity.z, maxSpeedChange);
+        velocity.x = Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
+        velocity.z = Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
 
         if (desiredJump)
         {
