@@ -30,7 +30,7 @@ public class MoveSpherePhysics : MonoBehaviour
     [SerializeField, Range(0, 10), Tooltip("在空中跳跃的最大次数")]
     int maxAirJumps = 2;
 
-    [SerializeField, Range(0, 90)]
+    [SerializeField, Range(0, 90), Tooltip("判断是否水平与地面的容错角度")]
     float maxGroundAngle = 25f;
 
     // 实际速度
@@ -47,9 +47,19 @@ public class MoveSpherePhysics : MonoBehaviour
     // 记录当前有几次跳跃
     int jumpCount;
 
+    float minGroundDotProduct;
+
     void Awake()
     {
         rigidBody = GetComponent<Rigidbody>();
+        OnValidate();
+    }
+
+    // 调用条件： 脚本加载时、Inspector界面数值修改时
+    void OnValidate()
+    {
+        // 将允许误差角度转换为法线的y值（0-1）
+        minGroundDotProduct = Mathf.Cos(maxGroundAngle * Mathf.Deg2Rad);
     }
 
     void Update()
@@ -135,11 +145,11 @@ public class MoveSpherePhysics : MonoBehaviour
             Vector3 normal = contactPoint.normal;
             
             Vector3 a = transform.position;
-            Vector3 b = transform.TransformPoint(contactPoint.normal);
+            Vector3 b = transform.TransformPoint(contactPoint.normal * 2);
             Debug.DrawLine(a, b, Color.green);
 
             // 接近与垂直，代表与地面接触
-            isOnGround |= normal.y >= 0.9f;
+            isOnGround |= normal.y >= minGroundDotProduct;
         }
     }
 }
