@@ -49,6 +49,9 @@ public class MoveSpherePhysics : MonoBehaviour
 
     float minGroundDotProduct;
 
+    // 由于原来跳都是向上跳跃（简单的给vec3.y赋值)。现在根据碰撞点的法线数据跳跃
+    Vector3 concatNormal;
+
     void Awake()
     {
         rigidBody = GetComponent<Rigidbody>();
@@ -81,13 +84,7 @@ public class MoveSpherePhysics : MonoBehaviour
     void FixedUpdate()
     {
         UpdateState();
-        // 这帧最大的加速度
-        float acceleration = isOnGround ? maxAcceleration : maxAirAcceleration;
-        float maxSpeedChange = acceleration * Time.deltaTime;
-
-        // 将值 current 向 target 靠近
-        velocity.x = Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
-        velocity.z = Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
+        AdjustVelocity();
 
         if (desiredJump)
         {
@@ -105,7 +102,14 @@ public class MoveSpherePhysics : MonoBehaviour
     {
         velocity = rigidBody.velocity;
         if (isOnGround)
+        {
             jumpCount = 0;
+        }
+        else
+        {
+            // 当不在地面上时，采用垂直跳跃
+            concatNormal = Vector3.up;
+        }
     }
 
     void Jump()
@@ -114,14 +118,16 @@ public class MoveSpherePhysics : MonoBehaviour
         {
             jumpCount++;
             float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
-
-            // 减去之前的y分量，防止连续跳跃导致高度不一致的问题
-            if (velocity.y > 0f)
+            float alignedSpeed = Vector3.Dot(velocity, concatNormal);
+            if (alignedSpeed > 0f)
             {
-                jumpSpeed = Mathf.Max(jumpSpeed - velocity.y, 0);
+                jumpSpeed = Mathf.Max(jumpSpeed - alignedSpeed, 0);
             }
 
-            velocity.y += jumpSpeed;
+            // 简单粗暴的跳跃只会一直向上
+            // velocity.y += jumpSpeed;
+
+            velocity += concatNormal * jumpSpeed;
         }
     }
 
@@ -149,7 +155,33 @@ public class MoveSpherePhysics : MonoBehaviour
             Debug.DrawLine(a, b, Color.green);
 
             // 接近与垂直，代表与地面接触
-            isOnGround |= normal.y >= minGroundDotProduct;
+            if (normal.y >= minGroundDotProduct)
+            {
+                isOnGround = true;
+                concatNormal = normal;
+            }
         }
+    }
+
+    Vector3 ProjectOnContactPlane(Vector3 vector)
+    {
+        return vector - concatNormal * Vector3.Dot(vector, concatNormal);
+    }
+
+    void AdjustVelocity()
+    {
+        Vector3 xAxis = ProjectOnContactPlane(Vector3.right).normalized;
+        Vector3 zAxis = ProjectOnContactPlane(Vector3.forward).normalized;
+
+        float currentX = Vector3.Dot(velocity, xAxis);
+        float currentZ = Vector3.Dot(velocity, zAxis);
+
+        float acceleration = isOnGround ? maxAcceleration : maxAirAcceleration;
+        float maxSpeedChange = acceleration * Time.deltaTime;
+
+        float newX = Mathf.MoveTowards(currentX, desiredVelocity.x, maxSpeedChange);
+        float newZ = Mathf.MoveTowards(currentZ, desiredVelocity.z, maxSpeedChange);
+
+        velocity += xAxis * (newX - currentX) + zAxis * (newZ - currentZ);
     }
 }
