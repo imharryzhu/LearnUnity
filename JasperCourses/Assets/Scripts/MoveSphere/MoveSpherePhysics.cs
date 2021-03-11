@@ -41,8 +41,11 @@ public class MoveSpherePhysics : MonoBehaviour
 
     bool desiredJump;
 
+    // 与地面接触点的数量
+    int groundContactCount;
+
     // 是否在地面上，无法在update中判断球是否落地，所以用碰撞检测来判断
-    bool isOnGround;
+    bool isOnGround => groundContactCount > 0;
 
     // 记录当前有几次跳跃
     int jumpCount;
@@ -79,6 +82,9 @@ public class MoveSpherePhysics : MonoBehaviour
 
         // 玩家是否按下了跳跃键
         desiredJump |= Input.GetButtonDown("Jump");
+
+        // 碰撞点越多就越白
+        GetComponent<Renderer>().material.color = Color.white * (groundContactCount * .25f);
     }
 
     void FixedUpdate()
@@ -93,9 +99,7 @@ public class MoveSpherePhysics : MonoBehaviour
         }
 
         rigidBody.velocity = velocity;
-
-        // 先调用FixedUpdate再会处理碰撞，所以先置为false
-        isOnGround = false;
+        ClearState();
     }
 
     void UpdateState()
@@ -104,12 +108,24 @@ public class MoveSpherePhysics : MonoBehaviour
         if (isOnGround)
         {
             jumpCount = 0;
+            // 当接触点不止一个时，这个法线值是所有法线之和，所以必须归一化
+            if (groundContactCount > 1)
+            {
+                concatNormal.Normalize();
+            }
         }
         else
         {
             // 当不在地面上时，采用垂直跳跃
             concatNormal = Vector3.up;
         }
+    }
+
+    void ClearState()
+    {
+        groundContactCount = 0;
+        // 重置法线
+        concatNormal = Vector3.zero;
     }
 
     void Jump()
@@ -157,8 +173,8 @@ public class MoveSpherePhysics : MonoBehaviour
             // 接近与垂直，代表与地面接触
             if (normal.y >= minGroundDotProduct)
             {
-                isOnGround = true;
-                concatNormal = normal;
+                groundContactCount++;
+                concatNormal += normal;
             }
         }
     }
