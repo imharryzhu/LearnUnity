@@ -33,6 +33,12 @@ public class MoveSpherePhysics : MonoBehaviour
     [SerializeField, Range(0, 90), Tooltip("判断是否水平与地面的容错角度")]
     float maxGroundAngle = 25f;
 
+    [SerializeField, Range(0, 100), Tooltip("最大捕捉速度")]
+    float maxSnapSpeed = 100f;
+
+    [SerializeField, Min(0f), Tooltip("判定可捕捉的最大高度")]
+    float probeDistane = 1f;
+
     // 实际速度
     Vector3 velocity, desiredVelocity;
 
@@ -55,10 +61,15 @@ public class MoveSpherePhysics : MonoBehaviour
     // 由于原来跳都是向上跳跃（简单的给vec3.y赋值)。现在根据碰撞点的法线数据跳跃
     Vector3 concatNormal;
 
+    // 记录球离开地面的物理帧次数
+    int stepsSinceLastGrounded;
+
     void Awake()
     {
         rigidBody = GetComponent<Rigidbody>();
         OnValidate();
+
+        Time.timeScale = 0.5f;
     }
 
     // 调用条件： 脚本加载时、Inspector界面数值修改时
@@ -83,8 +94,7 @@ public class MoveSpherePhysics : MonoBehaviour
         // 玩家是否按下了跳跃键
         desiredJump |= Input.GetButtonDown("Jump");
 
-        // 碰撞点越多就越白
-        GetComponent<Renderer>().material.color = Color.white * (groundContactCount * .25f);
+        GetComponent<Renderer>().material.color = isOnGround ? Color.black : Color.white;
     }
 
     void FixedUpdate()
@@ -104,9 +114,11 @@ public class MoveSpherePhysics : MonoBehaviour
 
     void UpdateState()
     {
+        stepsSinceLastGrounded++;
         velocity = rigidBody.velocity;
-        if (isOnGround)
+        if (isOnGround || SnapToGround()) // 尝试拉回到地面
         {
+            stepsSinceLastGrounded = 0;
             jumpCount = 0;
             // 当接触点不止一个时，这个法线值是所有法线之和，所以必须归一化
             if (groundContactCount > 1)
@@ -126,6 +138,45 @@ public class MoveSpherePhysics : MonoBehaviour
         groundContactCount = 0;
         // 重置法线
         concatNormal = Vector3.zero;
+    }
+
+    // 尝试拉回到地面
+    bool SnapToGround()
+    {
+        if (stepsSinceLastGrounded > 1)
+        {
+            return false;
+        }
+
+        // 实际速度大于最大可捕捉速度，就判定为不可捕捉
+        float speed = velocity.magnitude;
+        if (speed > maxSnapSpeed)
+        {
+            return false;
+        }
+
+        RaycastHit hit;
+        // 先物体正下方发射线，如果没有地面，则说明不要强行拉回
+        if(!Physics.Raycast(rigidBody.position, Vector3.down, out hit, probeDistane))
+        {
+            return false;
+        }
+
+        // 如果射线检测到了地面
+        if (hit.normal.y < minGroundDotProduct)
+        {
+            return false;
+        }
+
+        groundContactCount = 1;
+        concatNormal = hit.normal;
+
+        float dot = Vector3.Dot(velocity, hit.normal);
+        if (dot > 0f)
+        {
+            velocity = (velocity - hit.normal * dot).normalized * speed;
+        }
+        return true;
     }
 
     void Jump()
