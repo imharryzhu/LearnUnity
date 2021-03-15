@@ -39,6 +39,9 @@ public class MoveSpherePhysics : MonoBehaviour
     [SerializeField, Min(0f), Tooltip("判定可捕捉的最大高度")]
     float probeDistane = 1f;
 
+    [SerializeField]
+    LayerMask probeMask = -1;
+
     // 实际速度
     Vector3 velocity, desiredVelocity;
 
@@ -157,7 +160,7 @@ public class MoveSpherePhysics : MonoBehaviour
 
         RaycastHit hit;
         // 先物体正下方发射线，如果没有地面，则说明不要强行拉回
-        if(!Physics.Raycast(rigidBody.position, Vector3.down, out hit, probeDistane))
+        if(!Physics.Raycast(rigidBody.position, Vector3.down, out hit, probeDistane, probeMask))
         {
             return false;
         }
