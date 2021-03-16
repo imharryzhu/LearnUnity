@@ -33,6 +33,9 @@ public class MoveSpherePhysics : MonoBehaviour
     [SerializeField, Range(0, 90), Tooltip("判断是否水平与地面的容错角度")]
     float maxGroundAngle = 25f;
 
+    [SerializeField, Range(0, 90), Tooltip("判断是否水平与楼梯的容错角度")]
+    float maxStairsAngle = 50f;
+
     [SerializeField, Range(0, 100), Tooltip("最大捕捉速度")]
     float maxSnapSpeed = 100f;
 
@@ -40,7 +43,7 @@ public class MoveSpherePhysics : MonoBehaviour
     float probeDistane = 1f;
 
     [SerializeField]
-    LayerMask probeMask = -1;
+    LayerMask probeMask = -1, stairsMask = -1;
 
     // 实际速度
     Vector3 velocity, desiredVelocity;
@@ -52,17 +55,22 @@ public class MoveSpherePhysics : MonoBehaviour
 
     // 与地面接触点的数量
     int groundContactCount;
+    int steepContactCount;
 
     // 是否在地面上，无法在update中判断球是否落地，所以用碰撞检测来判断
     bool isOnGround => groundContactCount > 0;
 
+    // 是否处在陡峭的地方
+    bool isOnSteep => steepContactCount > 0;
+
     // 记录当前有几次跳跃
     int jumpCount;
 
-    float minGroundDotProduct;
+    float minGroundDotProduct, minStairsDotProduct;
 
     // 由于原来跳都是向上跳跃（简单的给vec3.y赋值)。现在根据碰撞点的法线数据跳跃
     Vector3 concatNormal;
+    Vector3 steepNormal;
 
     // 记录球被动离开地面的物理帧次数
     int stepsSinceLastGrounded;
@@ -83,6 +91,8 @@ public class MoveSpherePhysics : MonoBehaviour
     {
         // 将允许误差角度转换为法线的y值（0-1）
         minGroundDotProduct = Mathf.Cos(maxGroundAngle * Mathf.Deg2Rad);
+
+        minStairsDotProduct = Mathf.Cos(maxStairsAngle * Mathf.Deg2Rad);
     }
 
     void Update()
@@ -143,8 +153,10 @@ public class MoveSpherePhysics : MonoBehaviour
     void ClearState()
     {
         groundContactCount = 0;
+        steepContactCount = 0;
         // 重置法线
         concatNormal = Vector3.zero;
+        steepNormal = Vector3.zero;
     }
 
     // 尝试拉回到地面
@@ -171,7 +183,7 @@ public class MoveSpherePhysics : MonoBehaviour
         }
 
         // 如果射线检测到了地面
-        if (hit.normal.y < minGroundDotProduct)
+        if (hit.normal.y < GetMinDot(hit.collider.gameObject.layer))
         {
             return false;
         }
@@ -220,6 +232,7 @@ public class MoveSpherePhysics : MonoBehaviour
 
     void EvaluteCollision(Collision collision)
     {
+        float minDot = GetMinDot(collision.gameObject.layer);
         for (int i = 0; i < collision.contactCount; i++)
         {
             ContactPoint contactPoint = collision.GetContact(i);
@@ -228,13 +241,18 @@ public class MoveSpherePhysics : MonoBehaviour
             
             Vector3 a = transform.position;
             Vector3 b = transform.TransformPoint(contactPoint.normal * 2);
-            Debug.DrawLine(a, b, Color.green);
+            Debug.DrawLine(a, b, Color.red);
 
             // 接近与垂直，代表与地面接触
-            if (normal.y >= minGroundDotProduct)
+            if (normal.y >= minDot)
             {
                 groundContactCount++;
                 concatNormal += normal;
+            }
+            else if (normal.y > -0.01f)
+            {
+                steepContactCount++;
+                steepNormal += normal;
             }
         }
     }
@@ -259,5 +277,10 @@ public class MoveSpherePhysics : MonoBehaviour
         float newZ = Mathf.MoveTowards(currentZ, desiredVelocity.z, maxSpeedChange);
 
         velocity += xAxis * (newX - currentX) + zAxis * (newZ - currentZ);
+    }
+
+    float GetMinDot(int layer)
+    {
+        return (stairsMask & (1 << layer)) == 0 ? minGroundDotProduct : minStairsDotProduct;
     }
 }
