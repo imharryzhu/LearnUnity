@@ -64,8 +64,11 @@ public class MoveSpherePhysics : MonoBehaviour
     // 由于原来跳都是向上跳跃（简单的给vec3.y赋值)。现在根据碰撞点的法线数据跳跃
     Vector3 concatNormal;
 
-    // 记录球离开地面的物理帧次数
+    // 记录球被动离开地面的物理帧次数
     int stepsSinceLastGrounded;
+
+    // 记录主动跳跃在空中的物理帧次数
+    int stepsSinceLastJump;
 
     void Awake()
     {
@@ -118,6 +121,7 @@ public class MoveSpherePhysics : MonoBehaviour
     void UpdateState()
     {
         stepsSinceLastGrounded++;
+        stepsSinceLastJump++;
         velocity = rigidBody.velocity;
         if (isOnGround || SnapToGround()) // 尝试拉回到地面
         {
@@ -146,12 +150,13 @@ public class MoveSpherePhysics : MonoBehaviour
     // 尝试拉回到地面
     bool SnapToGround()
     {
-        if (stepsSinceLastGrounded > 1)
+        // 当被动离开超过一帧，或者主动跳跃后超过2帧，则判断为无法拉回
+        if (stepsSinceLastGrounded > 1 || stepsSinceLastJump <= 2)
         {
             return false;
         }
 
-        // 实际速度大于最大可捕捉速度，就判定为不可捕捉
+        // 实际速度大于最大可捕捉速度，就判定为不可拉回
         float speed = velocity.magnitude;
         if (speed > maxSnapSpeed)
         {
@@ -186,6 +191,7 @@ public class MoveSpherePhysics : MonoBehaviour
     {
         if (isOnGround || jumpCount < maxAirJumps)
         {
+            stepsSinceLastJump = 0;
             jumpCount++;
             float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
             float alignedSpeed = Vector3.Dot(velocity, concatNormal);
