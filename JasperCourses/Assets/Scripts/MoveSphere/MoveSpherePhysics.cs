@@ -133,10 +133,13 @@ public class MoveSpherePhysics : MonoBehaviour
         stepsSinceLastGrounded++;
         stepsSinceLastJump++;
         velocity = rigidBody.velocity;
-        if (isOnGround || SnapToGround()) // 尝试拉回到地面
+        if (isOnGround || SnapToGround() || CheckSteepContacts()) // 在正确的地面、可以拉回地面、在狭窄裂缝中
         {
             stepsSinceLastGrounded = 0;
-            jumpCount = 0;
+            if (stepsSinceLastJump > 1)
+            {
+                jumpCount = 0;
+            }
             // 当接触点不止一个时，这个法线值是所有法线之和，所以必须归一化
             if (groundContactCount > 1)
             {
@@ -201,22 +204,41 @@ public class MoveSpherePhysics : MonoBehaviour
 
     void Jump()
     {
-        if (isOnGround || jumpCount < maxAirJumps)
+        Vector3 jumpDir;
+
+        if (isOnGround)
         {
-            stepsSinceLastJump = 0;
-            jumpCount++;
-            float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
-            float alignedSpeed = Vector3.Dot(velocity, concatNormal);
-            if (alignedSpeed > 0f)
-            {
-                jumpSpeed = Mathf.Max(jumpSpeed - alignedSpeed, 0);
-            }
-
-            // 简单粗暴的跳跃只会一直向上
-            // velocity.y += jumpSpeed;
-
-            velocity += concatNormal * jumpSpeed;
+            jumpDir = concatNormal;
         }
+        else if(isOnSteep)
+        {
+            jumpDir = steepNormal;
+            jumpCount = 0;
+        }
+        else if (maxAirJumps > 0 && jumpCount <= maxAirJumps)
+        {
+            if (jumpCount == 0)
+                jumpCount = 1;
+            jumpDir = concatNormal;
+        }
+        else
+        {
+            return;
+        }
+
+        stepsSinceLastJump = 0;
+        jumpCount++;
+        float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
+        float alignedSpeed = Vector3.Dot(velocity, jumpDir);
+        if (alignedSpeed > 0f)
+        {
+            jumpSpeed = Mathf.Max(jumpSpeed - alignedSpeed, 0);
+        }
+
+        // 简单粗暴的跳跃只会一直向上
+        // velocity.y += jumpSpeed;
+
+        velocity += jumpDir * jumpSpeed;
     }
 
     void OnCollisionEnter(Collision collision)
@@ -282,5 +304,21 @@ public class MoveSpherePhysics : MonoBehaviour
     float GetMinDot(int layer)
     {
         return (stairsMask & (1 << layer)) == 0 ? minGroundDotProduct : minStairsDotProduct;
+    }
+
+    // 检测是否在夹缝中（允许当做地面移动的夹缝）
+    bool CheckSteepContacts()
+    {
+        if (steepContactCount > 1)
+        {
+            steepNormal.Normalize();
+            if (steepNormal.y >= minGroundDotProduct)
+            {
+                groundContactCount = 1;
+                concatNormal = steepNormal;
+                return true;
+            }
+        }
+        return false;
     }
 }
