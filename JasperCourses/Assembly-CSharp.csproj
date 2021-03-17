@@ -68,6 +68,7 @@
     <Compile Include="Assets\Scripts\Fractal\Fractal.cs" />
     <Compile Include="Assets\Scripts\MoveSphere\MoveSphere.cs" />
     <Compile Include="Assets\Scripts\MoveSphere\MoveSpherePhysics.cs" />
+    <Compile Include="Assets\Scripts\MoveSphere\OrbitCamera.cs" />
     <Compile Include="Assets\Scripts\VisualizingMath\FrameRateCounter.cs" />
     <Compile Include="Assets\Scripts\VisualizingMath\FunctionLibrary.cs" />
     <Compile Include="Assets\Scripts\VisualizingMath\GPUGraph.cs" />
