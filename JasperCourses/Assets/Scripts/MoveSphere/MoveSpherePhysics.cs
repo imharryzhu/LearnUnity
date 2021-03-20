@@ -82,8 +82,6 @@ public class MoveSpherePhysics : MonoBehaviour
     {
         rigidBody = GetComponent<Rigidbody>();
         OnValidate();
-
-        Time.timeScale = 0.5f;
     }
 
     // 调用条件： 脚本加载时、Inspector界面数值修改时

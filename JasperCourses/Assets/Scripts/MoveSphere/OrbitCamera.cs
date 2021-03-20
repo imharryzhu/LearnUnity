@@ -16,8 +16,14 @@ public class OrbitCamera : MonoBehaviour
     [SerializeField, Min(0f), Tooltip("物体移动超过该值时相机才会调整")]
     float focusRadius = 1f;
 
+    // 相机跟随物体移动的位置插值计算变量
+    float focusCentering = 0.1f;
+
     // 当前相机焦点位置
     Vector3 focusPoint;
+
+    // 相机的角度，x定义垂直方向，y定义水平方向
+    Vector2 orbitAngles = new Vector2(45f, 0f);
 
     void Awake()
     {
@@ -35,26 +41,39 @@ public class OrbitCamera : MonoBehaviour
         // 目标世界坐标
         UpdateFocusPoint();
 
+        Quaternion loockRotation = Quaternion.Euler(orbitAngles);
+
         // 相机看向的方向
-        Vector3 lookDir = transform.forward;
+        Vector3 lookDirection = loockRotation * Vector3.forward;
 
         // 将相机放在正确的位置
-        transform.position = focusPoint - lookDir * distance;
+        transform.position = focusPoint - lookDirection * distance;
+        transform.rotation = loockRotation;
     }
 
     void UpdateFocusPoint()
     {
+        // 物体的实际位置
         Vector3 targetPoint = focus.position;
         if (focusRadius > 0)
         {
             float distance = Vector3.Distance(targetPoint, focusPoint);
+            float t = 1;
+            if(distance > 0.01f && focusCentering > 0f)
+            {
+                t = Mathf.Pow(1f - focusCentering, Time.unscaledDeltaTime);
+            }
             if (distance > focusRadius)
             {
-                // 线性插值，平滑移动相机到焦点位置
-                focusPoint = Vector3.Lerp(
-                    targetPoint, focusPoint, focusRadius / distance);
+                t = Mathf.Min(t, focusRadius / distance);
+                
             }
+            // 线性插值，平滑移动相机到焦点位置
+            focusPoint = Vector3.Lerp(
+                targetPoint, focusPoint, t);
 
+            // 不明白为什么不直接
+            // Vector3.Lerp(focusPoint, targetPoint, Time.unscaledDeltaTime);
         }
         else
         {
