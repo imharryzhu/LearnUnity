@@ -16,6 +16,12 @@ public class OrbitCamera : MonoBehaviour
     [SerializeField, Min(0f), Tooltip("物体移动超过该值时相机才会调整")]
     float focusRadius = 1f;
 
+    [SerializeField, Range(1f, 360f), Tooltip("相机旋转速度")]
+    float rotationSpeed = 90f;
+
+    [SerializeField, Range(-89f, 89f), Tooltip("相机垂直旋转的角度限制")]
+    float minVerticalAngle = -30f, maxVerticalAngle = 60f;
+
     // 相机跟随物体移动的位置插值计算变量
     float focusCentering = 0.1f;
 
@@ -28,6 +34,15 @@ public class OrbitCamera : MonoBehaviour
     void Awake()
     {
         focusPoint = focus.position;
+        transform.localRotation = Quaternion.Euler(orbitAngles);
+    }
+
+    void OnValidate()
+    {
+        if (maxVerticalAngle < minVerticalAngle)
+        {
+            maxVerticalAngle = minVerticalAngle;
+        }
     }
 
     /*
@@ -41,7 +56,13 @@ public class OrbitCamera : MonoBehaviour
         // 目标世界坐标
         UpdateFocusPoint();
 
-        Quaternion loockRotation = Quaternion.Euler(orbitAngles);
+        // 更新相机旋转角度
+        Quaternion loockRotation = transform.localRotation;
+        if (ManualRotation())
+        {
+            ConstrainAngles();
+            loockRotation = Quaternion.Euler(orbitAngles);
+        }
 
         // 相机看向的方向
         Vector3 lookDirection = loockRotation * Vector3.forward;
@@ -82,4 +103,35 @@ public class OrbitCamera : MonoBehaviour
         }
     }
 
+    bool ManualRotation()
+    {
+        // 获取自定义的按键输入
+        Vector2 input = new Vector2(
+            Input.GetAxis("Vertical Camera"),
+            Input.GetAxis("Horizontal Camera")
+        );
+
+        const float e = 0.001f;
+        if (Mathf.Abs(input.x) > e || Mathf.Abs(input.y) > e)
+        {
+            orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
+            return true;
+        }
+        return false;
+    }
+
+    void ConstrainAngles()
+    {
+        orbitAngles.x =
+            Mathf.Clamp(orbitAngles.x, minVerticalAngle, maxVerticalAngle);
+
+        if (orbitAngles.y < 0)
+        {
+            orbitAngles.y += 360;
+        }
+        else if (orbitAngles.y >= 360)
+        {
+            orbitAngles.y -= 360;
+        }
+    }
 }
