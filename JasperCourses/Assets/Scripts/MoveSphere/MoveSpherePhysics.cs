@@ -42,6 +42,9 @@ public class MoveSpherePhysics : MonoBehaviour
     [SerializeField, Min(0f), Tooltip("判定可捕捉的最大高度")]
     float probeDistane = 1f;
 
+    [SerializeField, Tooltip("")]
+    Transform playerInputSpace = default;
+
     [SerializeField]
     LayerMask probeMask = -1, stairsMask = -1;
 
@@ -103,7 +106,20 @@ public class MoveSpherePhysics : MonoBehaviour
         playerInput = Vector2.ClampMagnitude(playerInput, 1f);
 
         // 理论速度：计算得出玩家摇杆对应的速度
-        desiredVelocity = maxSpeed * new Vector3(playerInput.x, 0f, playerInput.y);
+        
+        if (playerInputSpace)
+        {
+            Vector3 forward = playerInputSpace.forward;
+            forward.y = 0f; forward.Normalize();
+            Vector3 right = playerInputSpace.right;
+            right.y = 0f; right.Normalize();
+            desiredVelocity = 
+                (forward * playerInput.y + right * playerInput.x) * maxSpeed;
+        }
+        else
+        {
+            desiredVelocity = maxSpeed * new Vector3(playerInput.x, 0f, playerInput.y);
+        }
 
         // 玩家是否按下了跳跃键
         desiredJump |= Input.GetButtonDown("Jump");

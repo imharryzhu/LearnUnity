@@ -28,6 +28,9 @@ public class OrbitCamera : MonoBehaviour
     [SerializeField, Range(0f, 90f)]
     float alignSmoothRange = 45f;
 
+    [SerializeField]
+    LayerMask obstructionMask = -1;
+
     // 相机跟随物体移动的位置插值计算变量
     float focusCentering = 0.1f;
 
@@ -43,8 +46,24 @@ public class OrbitCamera : MonoBehaviour
     // 最后一次手动旋转发生的时间
     float lastManualRotaitonTime;
 
+    Camera regularCamera;
+
+    Vector3 CameraHalfExtends
+    {
+        get
+        {
+            Vector3 halfExtends;
+            halfExtends.y = regularCamera.nearClipPlane *
+                Mathf.Tan(0.5f * Mathf.Deg2Rad * regularCamera.fieldOfView);
+            halfExtends.x = halfExtends.y * regularCamera.aspect;
+            halfExtends.z = 0f;
+            return halfExtends;
+        }
+    }
+
     void Awake()
     {
+        regularCamera = GetComponent<Camera>();
         focusPoint = focus.position;
         transform.localRotation = Quaternion.Euler(orbitAngles);
     }
@@ -69,19 +88,35 @@ public class OrbitCamera : MonoBehaviour
         UpdateFocusPoint();
 
         // 更新相机旋转角度
-        Quaternion loockRotation = transform.localRotation;
+        Quaternion lookRotation = transform.localRotation;
         if (ManualRotation() || AutomaticRotation())
         {
             ConstrainAngles();
-            loockRotation = Quaternion.Euler(orbitAngles);
+            lookRotation = Quaternion.Euler(orbitAngles);
         }
 
         // 相机看向的方向
-        Vector3 lookDirection = loockRotation * Vector3.forward;
+        Vector3 lookDirection = lookRotation * Vector3.forward;
+        Vector3 lookPosition = focusPoint - lookDirection * distance;
+
+        Vector3 rectOffset = lookDirection * regularCamera.nearClipPlane;
+        Vector3 rectPosition = lookPosition + rectOffset;
+        Vector3 castFrom = focus.position;
+        Vector3 castLine = rectPosition - castFrom;
+        float castDistance = castLine.magnitude;
+        Vector3 castDirection = castLine / castDistance;
+
+        if (Physics.BoxCast(
+            castFrom, CameraHalfExtends, castDirection, 
+            out RaycastHit hit, lookRotation, castDistance, obstructionMask))
+        {
+            rectPosition = castFrom + castDirection * hit.distance;
+            lookPosition = rectPosition - rectOffset;
+        }
 
         // 将相机放在正确的位置
-        transform.position = focusPoint - lookDirection * distance;
-        transform.rotation = loockRotation;
+        transform.position = lookPosition;
+        transform.rotation = lookRotation;
     }
 
     void UpdateFocusPoint()
