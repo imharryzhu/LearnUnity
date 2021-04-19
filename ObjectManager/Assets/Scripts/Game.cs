@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-public class Game : MonoBehaviour
+public class Game : PersistableObject
 {
     // prefab
-    public Transform prefab;
+    public PersistableObject prefab;
 
     // 存储当前场景物体的列表
-    List<Transform> objects;
+    List<PersistableObject> objects;
 
-    // 存储路径
-    string savePath;
-
+    [SerializeField, Tooltip("存储器")]
+    public PersistentStorage storage;
 
     [SerializeField, Tooltip("创建物体快捷键")]
     public KeyCode createKey = KeyCode.C;
@@ -30,9 +29,7 @@ public class Game : MonoBehaviour
 
     void Awake()
     {
-        objects = new List<Transform>();
-        savePath = Path.Combine(Application.persistentDataPath, "saveFile");
-        Debug.Log("存储路径：" + savePath);
+        objects = new List<PersistableObject>();
     }
 
     void Update()
@@ -47,24 +44,27 @@ public class Game : MonoBehaviour
         }
         else if(Input.GetKeyUp(saveKey))
         {
-            Save();
+            storage.Save(this);
         }
         else if (Input.GetKeyDown(loadKey))
         {
-            Load();
+            BeginNewGame();
+            storage.Load(this);
         }
     }
 
     void CreateObject()
     {
-        Transform t = Instantiate(prefab);
+        PersistableObject o = Instantiate(prefab);
+
+        Transform t = o.transform;
 
         // 在一个球体的空间内的随机一个点
         t.localPosition = Random.insideUnitSphere * 5f;
         t.localRotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1f) * Vector3.one;
 
-        objects.Add(t);
+        objects.Add(o);
     }
 
     void BeginNewGame()
@@ -76,42 +76,23 @@ public class Game : MonoBehaviour
         objects.Clear();
     }
 
-    void Save()
+    public override void Save(GameDataWriter writer)
     {
-        using(
-            BinaryWriter writer =
-                new BinaryWriter(File.Open(savePath, FileMode.Create))
-        )
+        writer.Write(objects.Count);
+        for (int i = 0; i < objects.Count; i++)
         {
-            writer.Write(objects.Count);
-            foreach(var obj in objects)
-            {
-                writer.Write(obj.localPosition.x);
-                writer.Write(obj.localPosition.y);
-                writer.Write(obj.localPosition.z);
-            }
+            objects[i].Save(writer);
         }
     }
 
-    void Load()
+    public override void Load(GameDataReader reader)
     {
-        BeginNewGame();
-        using (
-            BinaryReader reader =
-                new BinaryReader(File.Open(savePath, FileMode.Open))
-        )
+        int count = reader.ReadInt();
+        for (int i = 0; i < count; i++)
         {
-            int count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-            {
-                Vector3 p = new Vector3(
-                    reader.ReadSingle(),
-                    reader.ReadSingle(),
-                    reader.ReadSingle());
-                Transform t = Instantiate(prefab);
-                t.localPosition = p;
-                objects.Add(t);
-            }
+            PersistableObject obj = Instantiate(prefab);
+            obj.Load(reader);
+            objects.Add(obj);
         }
     }
 }
