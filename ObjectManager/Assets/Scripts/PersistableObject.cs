@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class PersistableObject : MonoBehaviour
 {
     public virtual void Save(GameDataWriter writer)

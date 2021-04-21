@@ -5,11 +5,15 @@ using UnityEngine;
 
 public class Game : PersistableObject
 {
+
+    // 版本号
+    const int saveVersion = 0;
+
     // prefab
-    public PersistableObject prefab;
+    public ShapeFactory shapeFactory;
 
     // 存储当前场景物体的列表
-    List<PersistableObject> objects;
+    List<Shape> objects;
 
     [SerializeField, Tooltip("存储器")]
     public PersistentStorage storage;
@@ -29,14 +33,14 @@ public class Game : PersistableObject
 
     void Awake()
     {
-        objects = new List<PersistableObject>();
+        objects = new List<Shape>();
     }
 
     void Update()
     {
         if (Input.GetKeyUp(createKey))
         {
-            CreateObject();
+            CreateShape();
         }
         else if(Input.GetKeyUp(newGameKey))
         {
@@ -53,9 +57,9 @@ public class Game : PersistableObject
         }
     }
 
-    void CreateObject()
+    void CreateShape()
     {
-        PersistableObject o = Instantiate(prefab);
+        Shape o = shapeFactory.GetRandom();
 
         Transform t = o.transform;
 
@@ -78,19 +82,28 @@ public class Game : PersistableObject
 
     public override void Save(GameDataWriter writer)
     {
+        writer.Write(saveVersion);
         writer.Write(objects.Count);
         for (int i = 0; i < objects.Count; i++)
         {
+            writer.Write(objects[i].ShapeId);
             objects[i].Save(writer);
         }
     }
 
     public override void Load(GameDataReader reader)
     {
+        int version = reader.ReadInt();
+        if (version > saveVersion)
+        {
+            Debug.LogError("文件版本号大于程序版本号，无法解析！");
+            return;
+        }
         int count = reader.ReadInt();
         for (int i = 0; i < count; i++)
         {
-            PersistableObject obj = Instantiate(prefab);
+            int shapeId = reader.ReadInt();
+            Shape obj = shapeFactory.Get(shapeId);
             obj.Load(reader);
             objects.Add(obj);
         }

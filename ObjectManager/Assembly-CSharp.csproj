@@ -68,6 +68,8 @@
     <Compile Include="Assets\Scripts\GameData.cs" />
     <Compile Include="Assets\Scripts\PersistableObject.cs" />
     <Compile Include="Assets\Scripts\PersistentStorage.cs" />
+    <Compile Include="Assets\Scripts\Shape.cs" />
+    <Compile Include="Assets\Scripts\ShapeFactory.cs" />
     <Reference Include="UnityEngine">
       <HintPath>/Applications/Unity/Hub/Editor/2019.4.20f1c1/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
