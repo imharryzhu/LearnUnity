@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Shape : PersistableObject
 {
+    /// <summary>
+    /// 形状
+    /// </summary>
     int shapeId = int.MinValue;
 
     public int ShapeId
@@ -25,22 +28,39 @@ public class Shape : PersistableObject
         }
     }
 
+    /// <summary>
+    /// 材质
+    /// </summary>
     public int MaterialId { get; set; }
 
     public void SetMaterial(Material material, int materialId)
     {
         // 设置材质
-        GetComponent<MeshRenderer>().material = material;
+        meshRenderer.material = material;
         // 赋值当前材质id
         MaterialId = materialId;
     }
 
 
+    /// <summary>
+    /// 颜色
+    /// </summary>
     private Color color;
+    private static int colorPropertyId = Shader.PropertyToID("_Color");
+    private static MaterialPropertyBlock materialPropertyBlock;
     public void SetColor(Color color)
     {
         this.color = color;
-        GetComponent<MeshRenderer>().material.color = color;
+        // WARN：设置材质颜色，会导致创建一个新的材质。
+        //meshRenderer.material.color = color;
+
+        // 所以这么设置颜色
+        if (materialPropertyBlock == null)
+        {
+            materialPropertyBlock = new MaterialPropertyBlock();
+        }
+        materialPropertyBlock.SetColor(colorPropertyId, color);
+        meshRenderer.SetPropertyBlock(materialPropertyBlock);
     }
 
     public override void Save(GameDataWriter writer)
@@ -54,5 +74,12 @@ public class Shape : PersistableObject
         base.Load(reader);
         // 颜色在version2才支持
         SetColor(reader.Version > 1 ? reader.ReadColor() : Color.white);
+    }
+
+    MeshRenderer meshRenderer;
+
+    void Awake()
+    {
+        meshRenderer = GetComponent<MeshRenderer>();
     }
 }
