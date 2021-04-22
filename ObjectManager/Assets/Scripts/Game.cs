@@ -7,7 +7,7 @@ public class Game : PersistableObject
 {
 
     // 版本号
-    const int saveVersion = 0;
+    const int saveVersion = 2;
 
     // prefab
     public ShapeFactory shapeFactory;
@@ -48,7 +48,7 @@ public class Game : PersistableObject
         }
         else if(Input.GetKeyUp(saveKey))
         {
-            storage.Save(this);
+            storage.Save(this, saveVersion);
         }
         else if (Input.GetKeyDown(loadKey))
         {
@@ -67,7 +67,14 @@ public class Game : PersistableObject
         t.localPosition = Random.insideUnitSphere * 5f;
         t.localRotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1f) * Vector3.one;
-
+        o.SetColor(Random.ColorHSV(
+            // 色彩
+            hueMin: 0f, hueMax: 1f,
+            // 饱和度
+            saturationMin: 0.5f, saturationMax: 1f,
+            valueMin: 0.25f, valueMax: 1f,
+            alphaMin: 1f, alphaMax: 1f
+        ));
         objects.Add(o);
     }
 
@@ -82,18 +89,19 @@ public class Game : PersistableObject
 
     public override void Save(GameDataWriter writer)
     {
-        writer.Write(saveVersion);
         writer.Write(objects.Count);
         for (int i = 0; i < objects.Count; i++)
         {
-            writer.Write(objects[i].ShapeId);
-            objects[i].Save(writer);
+            var obj = objects[i];
+            writer.Write(obj.ShapeId);
+            writer.Write(obj.MaterialId);
+            obj.Save(writer);
         }
     }
 
     public override void Load(GameDataReader reader)
     {
-        int version = reader.ReadInt();
+        int version = reader.Version;
         if (version > saveVersion)
         {
             Debug.LogError("文件版本号大于程序版本号，无法解析！");
@@ -103,7 +111,9 @@ public class Game : PersistableObject
         for (int i = 0; i < count; i++)
         {
             int shapeId = reader.ReadInt();
-            Shape obj = shapeFactory.Get(shapeId);
+            // materialId在版本1时，才支持
+            int materialId = version > 0 ? reader.ReadInt() : 0;
+            Shape obj = shapeFactory.Get(shapeId, materialId);
             obj.Load(reader);
             objects.Add(obj);
         }
