@@ -13,7 +13,7 @@ public class Game : PersistableObject
     public ShapeFactory shapeFactory;
 
     // 存储当前场景物体的列表
-    List<Shape> objects;
+    List<Shape> shapes;
 
     [SerializeField, Tooltip("存储器")]
     public PersistentStorage storage;
@@ -30,10 +30,13 @@ public class Game : PersistableObject
     [SerializeField, Tooltip("加载物体快捷键")]
     public KeyCode loadKey = KeyCode.L;
 
+    [SerializeField, Tooltip("加载物体快捷键")]
+    public KeyCode destoryKey = KeyCode.X;
+
 
     void Awake()
     {
-        objects = new List<Shape>();
+        shapes = new List<Shape>();
     }
 
     void Update()
@@ -55,6 +58,10 @@ public class Game : PersistableObject
             BeginNewGame();
             storage.Load(this);
         }
+        else if(Input.GetKeyDown(destoryKey))
+        {
+            DestoryShape();
+        }
     }
 
     void CreateShape()
@@ -75,24 +82,34 @@ public class Game : PersistableObject
             valueMin: 0.25f, valueMax: 1f,
             alphaMin: 1f, alphaMax: 1f
         ));
-        objects.Add(o);
+        shapes.Add(o);
     }
 
     void BeginNewGame()
     {
-        foreach (var obj in objects)
+        foreach (var obj in shapes)
         {
             Destroy(obj.gameObject);
         }
-        objects.Clear();
+        shapes.Clear();
+    }
+
+    void DestoryShape()
+    {
+        if (shapes.Count > 0)
+        {
+            int index = Random.Range(0, shapes.Count);
+            Destroy(shapes[index].gameObject);
+            shapes.RemoveAt(index);
+        }
     }
 
     public override void Save(GameDataWriter writer)
     {
-        writer.Write(objects.Count);
-        for (int i = 0; i < objects.Count; i++)
+        writer.Write(shapes.Count);
+        for (int i = 0; i < shapes.Count; i++)
         {
-            var obj = objects[i];
+            var obj = shapes[i];
             writer.Write(obj.ShapeId);
             writer.Write(obj.MaterialId);
             obj.Save(writer);
@@ -115,7 +132,7 @@ public class Game : PersistableObject
             int materialId = version > 0 ? reader.ReadInt() : 0;
             Shape obj = shapeFactory.Get(shapeId, materialId);
             obj.Load(reader);
-            objects.Add(obj);
+            shapes.Add(obj);
         }
     }
 }
