@@ -110,7 +110,7 @@ public class Game : PersistableObject
     {
         foreach (var obj in shapes)
         {
-            Destroy(obj.gameObject);
+            shapeFactory.Reclaim(obj);
         }
         shapes.Clear();
     }
@@ -120,7 +120,7 @@ public class Game : PersistableObject
         if (shapes.Count > 0)
         {
             int index = Random.Range(0, shapes.Count);
-            Destroy(shapes[index].gameObject);
+            shapeFactory.Reclaim(shapes[index]);
             shapes.RemoveAt(index);
         }
     }
