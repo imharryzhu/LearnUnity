@@ -32,7 +32,14 @@ public class Game : PersistableObject
 
     [SerializeField, Tooltip("加载物体快捷键")]
     public KeyCode destoryKey = KeyCode.X;
+    
+    // 物体创建速度
+    public float CreationSpeed { get; set; }
+    
+    // 物体销毁速度
+    public float DestructionSpeed { get; set; }
 
+    float creationProgress, destructionProgress;
 
     void Awake()
     {
@@ -60,6 +67,20 @@ public class Game : PersistableObject
         }
         else if(Input.GetKeyDown(destoryKey))
         {
+            DestoryShape();
+        }
+
+        creationProgress += Time.deltaTime * CreationSpeed;
+        while (creationProgress >= 1f)
+        {
+            creationProgress -= 1f;
+            CreateShape();
+        }
+
+        destructionProgress += Time.deltaTime * DestructionSpeed;
+        while (destructionProgress >= 1f)
+        {
+            destructionProgress -= 1f;
             DestoryShape();
         }
     }
