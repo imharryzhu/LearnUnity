@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Game : PersistableObject
 {
-
     // 版本号
     const int saveVersion = 2;
 
@@ -44,6 +45,7 @@ public class Game : PersistableObject
     void Awake()
     {
         shapes = new List<Shape>();
+        StartCoroutine(LoadLevel1());
     }
 
     void Update()
@@ -155,5 +157,18 @@ public class Game : PersistableObject
             obj.Load(reader);
             shapes.Add(obj);
         }
+    }
+
+    IEnumerator LoadLevel1()
+    {
+        this.enabled = false;
+        // 加载模式为混合，默认为单场景，相当于双击打开。
+        // 由于加载场景是异步的，所以使用协程，使得下面的代码下一帧再执行
+        yield return 
+            SceneManager.LoadSceneAsync("Level 1", LoadSceneMode.Additive);
+
+        // 还需要将Level1场景设置为ActiveScene
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Level 1"));
+        this.enabled = false;
     }
 }

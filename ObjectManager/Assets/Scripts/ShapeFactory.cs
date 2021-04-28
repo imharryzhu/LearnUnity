@@ -42,12 +42,18 @@ public class ShapeFactory : ScriptableObject
                 instance.gameObject.SetActive(true);
                 pool.RemoveAt(laststIndex);
             }
-        }
-        if (instance == null){
-            instance = Instantiate(prefabs[shapeId]);
-            instance.ShapeId = shapeId;
+            else
+            {
+                instance = Instantiate(prefabs[shapeId]);
+                instance.ShapeId = shapeId;
+            }
             // 放到新场景中
             SceneManager.MoveGameObjectToScene(instance.gameObject, poolScene);
+        }
+        else
+        {
+            instance = Instantiate(prefabs[shapeId]);
+            instance.ShapeId = shapeId;
         }
         instance.SetMaterial(materials[materialId], materialId);
         return instance;
@@ -91,6 +97,26 @@ public class ShapeFactory : ScriptableObject
         for (int i = 0; i < pools.Length; i++)
         {
             pools[i] = new List<Shape>();
+        }
+        // 判断是否在编辑器中
+        if (Application.isEditor)
+        {
+            // 当编辑器在运行模式下重新编译时。ScriptableObject对象不会被保存。
+            // 重新构建pool
+            poolScene = SceneManager.GetSceneByName(this.name);
+            if (poolScene.isLoaded)
+            {
+                var rootObjects = poolScene.GetRootGameObjects();
+                for (int i = 0; i < rootObjects.Length; i++)
+                {
+                    Shape pooledShape = rootObjects[i].GetComponent<Shape>();
+                    if (!pooledShape.gameObject.activeSelf)
+                    {
+                        pools[pooledShape.ShapeId].Add(pooledShape);
+                    }
+                }
+                return;
+            }
         }
         poolScene = SceneManager.CreateScene(this.name);
     }
