@@ -18,6 +18,9 @@ public class Game : PersistableObject
     [SerializeField, Tooltip("存储器")]
     public PersistentStorage storage;
 
+    [SerializeField, Tooltip("空间生成器")]
+    public SpawnZone spawnZone;
+
     [SerializeField, Tooltip("创建物体快捷键")]
     public KeyCode createKey = KeyCode.C;
 
@@ -121,7 +124,7 @@ public class Game : PersistableObject
         Transform t = o.transform;
 
         // 在一个球体的空间内的随机一个点
-        t.localPosition = Random.insideUnitSphere * 5f;
+        t.localPosition = spawnZone.SpawnPoint;
         t.localRotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1f) * Vector3.one;
         o.SetColor(Random.ColorHSV(
