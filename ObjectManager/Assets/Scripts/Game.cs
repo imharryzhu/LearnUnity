@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -31,8 +30,11 @@ public class Game : PersistableObject
     [SerializeField, Tooltip("加载物体快捷键")]
     public KeyCode loadKey = KeyCode.L;
 
-    [SerializeField, Tooltip("加载物体快捷键")]
+    [SerializeField, Tooltip("删除物体快捷键")]
     public KeyCode destoryKey = KeyCode.X;
+
+    [SerializeField, Tooltip("子场景数量")]
+    public int levelCount;
     
     // 物体创建速度
     public float CreationSpeed { get; set; }
@@ -42,10 +44,24 @@ public class Game : PersistableObject
 
     float creationProgress, destructionProgress;
 
-    void Awake()
+    void Start()
     {
         shapes = new List<Shape>();
-        StartCoroutine(LoadLevel1());
+
+        if (Application.isEditor)
+        {
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                Scene loadedScene = SceneManager.GetSceneAt(i);
+                if (loadedScene.name.Contains("Level"))
+                {
+                    SceneManager.SetActiveScene(loadedScene);
+                    return;
+                }
+            }
+        }
+
+        StartCoroutine(LoadLevel(1));
     }
 
     void Update()
@@ -70,6 +86,17 @@ public class Game : PersistableObject
         else if(Input.GetKeyDown(destoryKey))
         {
             DestoryShape();
+        }
+        else
+        {
+            for (int i = 0; i < levelCount; i++)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha0 + i))
+                {
+                    StartCoroutine(LoadLevel(i));
+                    return;
+                }
+            }
         }
 
         creationProgress += Time.deltaTime * CreationSpeed;
@@ -159,16 +186,16 @@ public class Game : PersistableObject
         }
     }
 
-    IEnumerator LoadLevel1()
+    IEnumerator LoadLevel(int levelIndex)
     {
         this.enabled = false;
         // 加载模式为混合，默认为单场景，相当于双击打开。
         // 由于加载场景是异步的，所以使用协程，使得下面的代码下一帧再执行
         yield return 
-            SceneManager.LoadSceneAsync("Level 1", LoadSceneMode.Additive);
+            SceneManager.LoadSceneAsync(levelIndex, LoadSceneMode.Additive);
 
         // 还需要将Level1场景设置为ActiveScene
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Level 1"));
-        this.enabled = false;
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(levelIndex));
+        this.enabled = true;
     }
 }
