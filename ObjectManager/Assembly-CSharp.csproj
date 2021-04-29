@@ -62,12 +62,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\CubeSpawnZone.cs" />
     <Compile Include="Assets\Scripts\Game.cs" />
     <Compile Include="Assets\Scripts\GameData.cs" />
+    <Compile Include="Assets\Scripts\GameLevel.cs" />
     <Compile Include="Assets\Scripts\PersistableObject.cs" />
     <Compile Include="Assets\Scripts\PersistentStorage.cs" />
     <Compile Include="Assets\Scripts\Shape.cs" />
     <Compile Include="Assets\Scripts\ShapeFactory.cs" />
+    <Compile Include="Assets\Scripts\ShpereSpawnZone.cs" />
     <Compile Include="Assets\Scripts\SpawnZone.cs" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.20f1c1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>

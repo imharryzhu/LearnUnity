@@ -10,34 +10,32 @@ public class Game : PersistableObject
     const int saveVersion = 2;
 
     // prefab
-    public ShapeFactory shapeFactory;
+    [SerializeField]
+    ShapeFactory shapeFactory;
 
     // 存储当前场景物体的列表
     List<Shape> shapes;
 
     [SerializeField, Tooltip("存储器")]
-    public PersistentStorage storage;
-
-    [SerializeField, Tooltip("空间生成器")]
-    public SpawnZone spawnZone;
+    PersistentStorage storage;
 
     [SerializeField, Tooltip("创建物体快捷键")]
-    public KeyCode createKey = KeyCode.C;
+    KeyCode createKey = KeyCode.C;
 
     [SerializeField, Tooltip("保存快捷键")]
-    public KeyCode saveKey = KeyCode.S;
+    KeyCode saveKey = KeyCode.S;
 
     [SerializeField, Tooltip("新建游戏快捷键")]
-    public KeyCode newGameKey = KeyCode.N;
+    KeyCode newGameKey = KeyCode.N;
 
     [SerializeField, Tooltip("加载物体快捷键")]
-    public KeyCode loadKey = KeyCode.L;
+    KeyCode loadKey = KeyCode.L;
 
     [SerializeField, Tooltip("删除物体快捷键")]
-    public KeyCode destoryKey = KeyCode.X;
+    KeyCode destoryKey = KeyCode.X;
 
     [SerializeField, Tooltip("子场景数量")]
-    public int levelCount;
+    int levelCount;
     
     // 物体创建速度
     public float CreationSpeed { get; set; }
@@ -45,10 +43,17 @@ public class Game : PersistableObject
     // 物体销毁速度
     public float DestructionSpeed { get; set; }
 
+    // 空间生成器
+    public SpawnZone spawnZoneOfLevel { get; set; }
+
+    public static Game Instance { get; private set; }
+
     float creationProgress, destructionProgress;
 
     void Start()
     {
+        Instance = this;
+
         shapes = new List<Shape>();
 
         if (Application.isEditor)
@@ -65,6 +70,11 @@ public class Game : PersistableObject
         }
 
         StartCoroutine(LoadLevel(1));
+    }
+
+    private void OnEnable()
+    {
+        Instance = this;
     }
 
     void Update()
@@ -124,7 +134,7 @@ public class Game : PersistableObject
         Transform t = o.transform;
 
         // 在一个球体的空间内的随机一个点
-        t.localPosition = spawnZone.SpawnPoint;
+        t.localPosition = spawnZoneOfLevel.SpawnPoint;
         t.localRotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1f) * Vector3.one;
         o.SetColor(Random.ColorHSV(
