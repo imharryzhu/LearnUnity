@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scripts\GameLevel.cs" />
     <Compile Include="Assets\Scripts\PersistableObject.cs" />
     <Compile Include="Assets\Scripts\PersistentStorage.cs" />
+    <Compile Include="Assets\Scripts\RotatingObject.cs" />
     <Compile Include="Assets\Scripts\Shape.cs" />
     <Compile Include="Assets\Scripts\ShapeFactory.cs" />
     <Compile Include="Assets\Scripts\ShpereSpawnZone.cs" />
