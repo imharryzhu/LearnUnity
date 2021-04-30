@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class Game : PersistableObject
 {
     // 版本号
-    const int saveVersion = 2;
+    const int saveVersion = 3;
 
     // prefab
     [SerializeField]
@@ -36,6 +36,9 @@ public class Game : PersistableObject
 
     [SerializeField, Tooltip("子场景数量")]
     int levelCount;
+
+    [SerializeField, Tooltip("加载时重置随机数种子")]
+    bool reseedOnLoad;
     
     // 物体创建速度
     public float CreationSpeed { get; set; }
@@ -48,13 +51,17 @@ public class Game : PersistableObject
 
     public static Game Instance { get; private set; }
 
+    // 创建、删除物体的速度
     float creationProgress, destructionProgress;
+
+    // 当前随机器的状态
+    Random.State mainRandomState;
 
     void Start()
     {
         Instance = this;
-
         shapes = new List<Shape>();
+        mainRandomState = Random.state;
 
         if (Application.isEditor)
         {
@@ -69,6 +76,7 @@ public class Game : PersistableObject
             }
         }
 
+        BeginNewGame();
         StartCoroutine(LoadLevel(1));
     }
 
@@ -150,6 +158,11 @@ public class Game : PersistableObject
 
     void BeginNewGame()
     {
+        Random.state = mainRandomState;
+        int seed = Random.Range(0, int.MaxValue);
+        mainRandomState = Random.state;
+        Random.InitState(seed);
+
         foreach (var obj in shapes)
         {
             shapeFactory.Reclaim(obj);
@@ -170,6 +183,7 @@ public class Game : PersistableObject
     public override void Save(GameDataWriter writer)
     {
         writer.Write(shapes.Count);
+        writer.Write(Random.state);
         for (int i = 0; i < shapes.Count; i++)
         {
             var obj = shapes[i];
@@ -188,6 +202,17 @@ public class Game : PersistableObject
             return;
         }
         int count = reader.ReadInt();
+
+        if (version >= 3)
+        {
+            Random.State state = reader.ReadRandomState();
+            if (!reseedOnLoad)
+            {
+                // 保持随机器的状态
+                Random.state = state;
+            }
+        }
+
         for (int i = 0; i < count; i++)
         {
             int shapeId = reader.ReadInt();

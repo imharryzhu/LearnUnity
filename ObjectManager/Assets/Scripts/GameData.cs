@@ -44,6 +44,12 @@ public class GameDataWriter
         writer.Write(color.b);
         writer.Write(color.a);
     }
+
+    public void Write(Random.State value)
+    {
+        // 由于Random.State是私有化的，使用JsonUtility对其序列化
+        writer.Write(JsonUtility.ToJson(Random.state));
+    }
 }
 
 public class GameDataReader
@@ -95,5 +101,10 @@ public class GameDataReader
         value.b = reader.ReadSingle();
         value.a = reader.ReadSingle();
         return value;
+    }
+
+    public Random.State ReadRandomState()
+    {
+        return JsonUtility.FromJson<Random.State>(reader.ReadString());
     }
 }
