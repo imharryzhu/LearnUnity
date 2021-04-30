@@ -33,6 +33,6 @@ public class CubeSpawnZone : SpawnZone
         Gizmos.color = Color.cyan;
         // 应用物体的转换矩阵
         Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawWireCube(this.transform.position, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
     }
 }
