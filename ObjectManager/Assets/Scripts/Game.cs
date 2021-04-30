@@ -46,20 +46,17 @@ public class Game : PersistableObject
     // 物体销毁速度
     public float DestructionSpeed { get; set; }
 
-    // 空间生成器
-    public SpawnZone spawnZoneOfLevel { get; set; }
-
-    public static Game Instance { get; private set; }
-
     // 创建、删除物体的速度
     float creationProgress, destructionProgress;
 
     // 当前随机器的状态
     Random.State mainRandomState;
 
+    // 当前关卡ID
+    int loadedLevelBuildIndex;
+
     void Start()
     {
-        Instance = this;
         shapes = new List<Shape>();
         mainRandomState = Random.state;
 
@@ -71,6 +68,7 @@ public class Game : PersistableObject
                 if (loadedScene.name.Contains("Level"))
                 {
                     SceneManager.SetActiveScene(loadedScene);
+                    loadedLevelBuildIndex = loadedScene.buildIndex;
                     return;
                 }
             }
@@ -78,11 +76,6 @@ public class Game : PersistableObject
 
         BeginNewGame();
         StartCoroutine(LoadLevel(1));
-    }
-
-    private void OnEnable()
-    {
-        Instance = this;
     }
 
     void Update()
@@ -110,10 +103,11 @@ public class Game : PersistableObject
         }
         else
         {
-            for (int i = 0; i < levelCount; i++)
+            for (int i = 1; i <= levelCount; i++)
             {
                 if (Input.GetKeyDown(KeyCode.Alpha0 + i))
                 {
+                    BeginNewGame();
                     StartCoroutine(LoadLevel(i));
                     return;
                 }
@@ -142,7 +136,7 @@ public class Game : PersistableObject
         Transform t = o.transform;
 
         // 在一个球体的空间内的随机一个点
-        t.localPosition = spawnZoneOfLevel.SpawnPoint;
+        t.localPosition = GameLevel.CurrentLevel.SpawnPoint;
         t.localRotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1f) * Vector3.one;
         o.SetColor(Random.ColorHSV(
@@ -184,6 +178,8 @@ public class Game : PersistableObject
     {
         writer.Write(shapes.Count);
         writer.Write(Random.state);
+        writer.Write(loadedLevelBuildIndex);
+        GameLevel.CurrentLevel.Save(writer);
         for (int i = 0; i < shapes.Count; i++)
         {
             var obj = shapes[i];
@@ -201,8 +197,14 @@ public class Game : PersistableObject
             Debug.LogError("文件版本号大于程序版本号，无法解析！");
             return;
         }
-        int count = reader.ReadInt();
 
+        StartCoroutine(LoadGame(reader));
+    }
+
+    IEnumerator LoadGame(GameDataReader reader)
+    {
+        int version = reader.Version;
+        int count = reader.ReadInt();
         if (version >= 3)
         {
             Random.State state = reader.ReadRandomState();
@@ -211,6 +213,13 @@ public class Game : PersistableObject
                 // 保持随机器的状态
                 Random.state = state;
             }
+        }
+
+        yield return LoadLevel(version <= 2 ? 1 : reader.ReadInt());
+        
+        if (reader.Version >=3)
+        {
+            GameLevel.CurrentLevel.Load(reader);
         }
 
         for (int i = 0; i < count; i++)
@@ -227,13 +236,19 @@ public class Game : PersistableObject
     IEnumerator LoadLevel(int levelIndex)
     {
         this.enabled = false;
-        // 加载模式为混合，默认为单场景，相当于双击打开。
         // 由于加载场景是异步的，所以使用协程，使得下面的代码下一帧再执行
+        if (loadedLevelBuildIndex > 0)
+        {
+            yield return SceneManager.UnloadSceneAsync(loadedLevelBuildIndex);
+        }
+
+        // 加载模式为混合，默认为单场景，相当于双击打开。
         yield return 
             SceneManager.LoadSceneAsync(levelIndex, LoadSceneMode.Additive);
 
         // 还需要将Level1场景设置为ActiveScene
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(levelIndex));
+        loadedLevelBuildIndex = levelIndex;
         this.enabled = true;
     }
 }
