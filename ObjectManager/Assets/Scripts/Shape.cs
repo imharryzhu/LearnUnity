@@ -67,6 +67,7 @@ public class Shape : PersistableObject
     {
         base.Save(writer);
         writer.Write(color);
+        writer.Write(AngularVelocity);
     }
 
     public override void Load(GameDataReader reader)
@@ -74,6 +75,8 @@ public class Shape : PersistableObject
         base.Load(reader);
         // 颜色在version2才支持
         SetColor(reader.Version > 1 ? reader.ReadColor() : Color.white);
+        // 自旋转角度
+        AngularVelocity = reader.Version >= 4 ? reader.ReadVector3() : Vector3.zero; 
     }
 
     MeshRenderer meshRenderer;
@@ -81,5 +84,15 @@ public class Shape : PersistableObject
     void Awake()
     {
         meshRenderer = GetComponent<MeshRenderer>();
+    }
+
+    /// <summary>
+    /// 自旋转角度
+    /// </summary>
+    public Vector3 AngularVelocity { get; set; }
+
+    void FixedUpdate()
+    {
+        transform.Rotate(AngularVelocity * Time.deltaTime);
     }
 }

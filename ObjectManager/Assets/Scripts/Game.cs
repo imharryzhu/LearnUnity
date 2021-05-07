@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class Game : PersistableObject
 {
     // 版本号
-    const int saveVersion = 3;
+    const int saveVersion = 4;
 
     // prefab
     [SerializeField]
@@ -148,6 +148,7 @@ public class Game : PersistableObject
             valueMin: 0.25f, valueMax: 1f,
             alphaMin: 1f, alphaMax: 1f
         ));
+        o.AngularVelocity = Random.onUnitSphere * Random.Range(0f, 90f);
         shapes.Add(o);
     }
 
