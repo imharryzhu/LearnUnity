@@ -46,4 +46,13 @@ public class GameLevel : PersistableObject
             persistableObjects[i].Load(reader);
         }
     }
+
+    /// <summary>
+    /// 配置物体的各种数据信息
+    /// </summary>
+    /// <param name="shape"></param>
+    public void ConfigureSpawn(Shape shape)
+    {
+        spawnZone.ConfigureSpawn(shape);
+    }
 }

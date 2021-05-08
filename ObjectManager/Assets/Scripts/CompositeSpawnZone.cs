@@ -30,6 +30,22 @@ public class CompositeSpawnZone : SpawnZone
         }
     }
 
+    public override void ConfigureSpawn(Shape shape)
+    {
+        int index;
+        if(sequential)
+        {
+            index = nextSequentialIndex++;
+            nextSequentialIndex %= spawns.Length;
+        }
+        else
+        {
+            index = Random.Range(0, spawns.Length);
+        }
+
+        spawns[index].ConfigureSpawn(shape);
+    }
+
     public override void Save(GameDataWriter writer)
     {
         writer.Write(nextSequentialIndex);
