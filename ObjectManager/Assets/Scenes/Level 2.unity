@@ -244,6 +244,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnZone: {fileID: 1971249547}
+  persistableObjects: []
 --- !u!4 &1457062996
 Transform:
   m_ObjectHideFlags: 0
@@ -288,6 +289,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   surfaceOnly: 1
+  spawnConfig:
+    spawnMovementDirection: 3
+    spawnSpeed:
+      min: 0
+      max: 1
 --- !u!4 &1971249548
 Transform:
   m_ObjectHideFlags: 0

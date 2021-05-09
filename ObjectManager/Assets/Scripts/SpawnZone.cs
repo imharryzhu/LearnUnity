@@ -3,22 +3,28 @@ using System.Collections;
 
 public abstract class SpawnZone : PersistableObject
 {
-    public enum SpawnMovementDirection
+    
+    [System.Serializable]
+    public struct SpawnConfiguration
     {
-        Forward,
-        Upward,
-        Outward, // 从中心点向出生点移动
-        Random
+        public enum SpawnMovementDirection
+        {
+            Forward,
+            Upward,
+            Outward, // 从中心点向出生点移动
+            Random
+        }
+
+        public SpawnMovementDirection spawnMovementDirection;
+        public FloatRange spawnSpeed;
     }
 
     [SerializeField, Tooltip("仅表面随机点")]
     protected bool surfaceOnly;
 
-    [SerializeField, Tooltip("物体移动方向")]
-    SpawnMovementDirection spawnMovementDirection;
+    [SerializeField, Tooltip("物体移动配置")]
+    SpawnConfiguration spawnConfig;
 
-    [SerializeField, Tooltip("物体移动速度配置")]
-    FloatRange spawnSpeed;
 
     /// <summary>
     /// 生成物体位置的向量
@@ -44,22 +50,21 @@ public abstract class SpawnZone : PersistableObject
         shape.AngularVelocity = Random.onUnitSphere * Random.Range(0f, 90f);
 
         Vector3 dir;
-        if (spawnMovementDirection == SpawnMovementDirection.Upward)
+        switch (spawnConfig.spawnMovementDirection)
         {
-            dir = transform.up;
+            case SpawnConfiguration.SpawnMovementDirection.Upward:
+                dir = transform.up;
+                break;
+            case SpawnConfiguration.SpawnMovementDirection.Outward:
+                dir = (t.localPosition - transform.position).normalized;
+                break;
+            case SpawnConfiguration.SpawnMovementDirection.Random:
+                dir = Random.onUnitSphere;
+                break;
+            default:
+                dir = transform.forward;
+                break;
         }
-        else if (spawnMovementDirection == SpawnMovementDirection.Outward)
-        {
-            dir = (t.localPosition - transform.position).normalized;
-        }
-        else if(spawnMovementDirection == SpawnMovementDirection.Random)
-        {
-            dir = Random.onUnitSphere;
-        }
-        else
-        {
-            dir = transform.forward;
-        }
-        shape.Velocity = dir * spawnSpeed.RandomValueInRange;
+        shape.Velocity = dir * spawnConfig.spawnSpeed.RandomValueInRange;
     }
 }

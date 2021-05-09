@@ -10,6 +10,9 @@ public class CompositeSpawnZone : SpawnZone
     [SerializeField, Tooltip("顺序在索引区域中的位置")]
     bool sequential;
 
+    [SerializeField, Tooltip("使用本区域而非子区域")]
+    bool overrideConfig;
+
     private int nextSequentialIndex;
 
     public override Vector3 SpawnPoint
@@ -32,18 +35,25 @@ public class CompositeSpawnZone : SpawnZone
 
     public override void ConfigureSpawn(Shape shape)
     {
-        int index;
-        if(sequential)
+        if (overrideConfig)
         {
-            index = nextSequentialIndex++;
-            nextSequentialIndex %= spawns.Length;
+            base.ConfigureSpawn(shape);
         }
         else
         {
-            index = Random.Range(0, spawns.Length);
-        }
+            int index;
+            if (sequential)
+            {
+                index = nextSequentialIndex++;
+                nextSequentialIndex %= spawns.Length;
+            }
+            else
+            {
+                index = Random.Range(0, spawns.Length);
+            }
 
-        spawns[index].ConfigureSpawn(shape);
+            spawns[index].ConfigureSpawn(shape);
+        }
     }
 
     public override void Save(GameDataWriter writer)
