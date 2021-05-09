@@ -17,6 +17,8 @@ public abstract class SpawnZone : PersistableObject
 
         public SpawnMovementDirection spawnMovementDirection;
         public FloatRange spawnSpeed;
+        public FloatRange angularSpeed;
+        public FloatRange scale;
     }
 
     [SerializeField, Tooltip("仅表面随机点")]
@@ -38,7 +40,7 @@ public abstract class SpawnZone : PersistableObject
         // 在一个球体的空间内的随机一个点
         t.localPosition = SpawnPoint;
         t.localRotation = Random.rotation;
-        t.localScale = Random.Range(0.1f, 1f) * Vector3.one;
+        t.localScale = spawnConfig.scale.RandomValueInRange * Vector3.one;
         shape.SetColor(Random.ColorHSV(
             // 色彩
             hueMin: 0f, hueMax: 1f,
@@ -47,7 +49,7 @@ public abstract class SpawnZone : PersistableObject
             valueMin: 0.25f, valueMax: 1f,
             alphaMin: 1f, alphaMax: 1f
         ));
-        shape.AngularVelocity = Random.onUnitSphere * Random.Range(0f, 90f);
+        shape.AngularVelocity = Random.onUnitSphere * spawnConfig.angularSpeed.RandomValueInRange;
 
         Vector3 dir;
         switch (spawnConfig.spawnMovementDirection)
