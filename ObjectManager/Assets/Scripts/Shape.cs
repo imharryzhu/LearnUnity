@@ -52,7 +52,6 @@ public class Shape : PersistableObject
     private static MaterialPropertyBlock materialPropertyBlock;
     public void SetColor(Color color)
     {
-        this.color = color;
         // WARN：设置材质颜色，会导致创建一个新的材质。
         //meshRenderer.material.color = color;
 
@@ -62,16 +61,32 @@ public class Shape : PersistableObject
             materialPropertyBlock = new MaterialPropertyBlock();
         }
         materialPropertyBlock.SetColor(colorPropertyId, color);
-        foreach (var renderer in meshRenderers)
+        for (int i = 0; i < meshRenderers.Length; i++)
         {
-            renderer.SetPropertyBlock(materialPropertyBlock);
+            meshRenderers[i].SetPropertyBlock(materialPropertyBlock);
+            colors[i] = color;
         }
+    }
+
+    public void SetColor(Color color, int index)
+    {
+        // 所以这么设置颜色
+        if (materialPropertyBlock == null)
+        {
+            materialPropertyBlock = new MaterialPropertyBlock();
+        }
+        materialPropertyBlock.SetColor(colorPropertyId, color);
+        meshRenderers[index].SetPropertyBlock(materialPropertyBlock);
+        colors[index] = color;
     }
 
     public override void Save(GameDataWriter writer)
     {
         base.Save(writer);
-        writer.Write(color);
+        for (int i = 0; i < colors.Length; i++)
+        {
+            writer.Write(colors[i]);
+        }
         writer.Write(AngularVelocity);
         writer.Write(Velocity);
     }
@@ -79,19 +94,38 @@ public class Shape : PersistableObject
     public override void Load(GameDataReader reader)
     {
         base.Load(reader);
-        // 颜色在version2才支持
-        SetColor(reader.Version > 1 ? reader.ReadColor() : Color.white);
+        if (reader.Version >= 5)
+        {
+            for (int i = 0; i < colors.Length; i++)
+            {
+                SetColor(reader.ReadColor(), i);
+            }
+        }
+        else
+        {
+            // 颜色在version2才支持
+            SetColor(reader.Version > 1 ? reader.ReadColor() : Color.white);
+        }
         // 自旋转角度
         AngularVelocity = reader.Version >= 4 ? reader.ReadVector3() : Vector3.zero;
-
         Velocity = reader.Version >= 5 ? reader.ReadVector3() : Vector3.zero;
     }
 
     [SerializeField]
     MeshRenderer[] meshRenderers;
 
+    Color[] colors;
+
     void Awake()
     {
+        if (meshRenderers.Length == 0)
+        {
+            meshRenderers = new MeshRenderer[] {
+                GetComponent<MeshRenderer>()
+            };
+        }
+
+        colors = new Color[meshRenderers.Length];
     }
 
     /// <summary>
@@ -108,5 +142,13 @@ public class Shape : PersistableObject
     {
         transform.Rotate(AngularVelocity * Time.deltaTime);
         transform.localPosition += Velocity * Time.deltaTime;
+    }
+
+    public int ColorCount
+    {
+        get
+        {
+            return colors.Length;
+        }
     }
 }

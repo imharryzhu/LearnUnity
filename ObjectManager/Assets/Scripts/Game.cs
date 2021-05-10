@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class Game : PersistableObject
 {
     // 版本号
-    const int saveVersion = 5;
+    const int saveVersion = 6;
 
     // prefab
     [SerializeField]
