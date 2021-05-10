@@ -166,6 +166,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   surfaceOnly: 0
+  spawnConfig:
+    spawnMovementDirection: 0
+    spawnSpeed:
+      min: 0
+      max: 1
+    angularSpeed:
+      min: 0
+      max: 1
+    scale:
+      min: 0
+      max: 1
+    color:
+      hue:
+        min: 0
+        max: 1
+      stauration:
+        min: 0
+        max: 1
+      value:
+        min: 0
+        max: 1
 --- !u!1 &302001287
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,10 +233,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   surfaceOnly: 0
+  spawnConfig:
+    spawnMovementDirection: 0
+    spawnSpeed:
+      min: 0
+      max: 1
+    angularSpeed:
+      min: 0
+      max: 1
+    scale:
+      min: 0
+      max: 1
+    color:
+      hue:
+        min: 0.29813665
+        max: 0.7267081
+      stauration:
+        min: 0.1304348
+        max: 0.39130437
+      value:
+        min: 0.09316771
+        max: 0.35403728
   spawns:
   - {fileID: 2011305865}
   - {fileID: 271523168}
   sequential: 0
+  overrideConfig: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,3 +533,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   surfaceOnly: 0
+  spawnConfig:
+    spawnMovementDirection: 0
+    spawnSpeed:
+      min: 0
+      max: 1
+    angularSpeed:
+      min: 0
+      max: 1
+    scale:
+      min: 0
+      max: 1
+    color:
+      hue:
+        min: 0
+        max: 1
+      stauration:
+        min: 0
+        max: 1
+      value:
+        min: 0
+        max: 1

@@ -36,11 +36,13 @@ public class Shape : PersistableObject
     public void SetMaterial(Material material, int materialId)
     {
         // 设置材质
-        meshRenderer.material = material;
+        foreach (var renderer in meshRenderers)
+        {
+            renderer.material = material;
+        }
         // 赋值当前材质id
         MaterialId = materialId;
     }
-
 
     /// <summary>
     /// 颜色
@@ -60,7 +62,10 @@ public class Shape : PersistableObject
             materialPropertyBlock = new MaterialPropertyBlock();
         }
         materialPropertyBlock.SetColor(colorPropertyId, color);
-        meshRenderer.SetPropertyBlock(materialPropertyBlock);
+        foreach (var renderer in meshRenderers)
+        {
+            renderer.SetPropertyBlock(materialPropertyBlock);
+        }
     }
 
     public override void Save(GameDataWriter writer)
@@ -82,11 +87,11 @@ public class Shape : PersistableObject
         Velocity = reader.Version >= 5 ? reader.ReadVector3() : Vector3.zero;
     }
 
-    MeshRenderer meshRenderer;
+    [SerializeField]
+    MeshRenderer[] meshRenderers;
 
     void Awake()
     {
-        meshRenderer = GetComponent<MeshRenderer>();
     }
 
     /// <summary>

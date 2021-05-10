@@ -162,17 +162,17 @@ MonoBehaviour:
       max: 0
     scale:
       min: 0
-      max: 0
+      max: 1
     color:
       hue:
         min: 0
-        max: 0
+        max: 1
       stauration:
         min: 0
-        max: 0
+        max: 1
       value:
         min: 0
-        max: 0
+        max: 1
 --- !u!4 &594956968
 Transform:
   m_ObjectHideFlags: 0
@@ -319,17 +319,17 @@ MonoBehaviour:
       max: 0
     scale:
       min: 0
-      max: 0
+      max: 1
     color:
       hue:
         min: 0
-        max: 0
+        max: 1
       stauration:
         min: 0
-        max: 0
+        max: 1
       value:
         min: 0
-        max: 0
+        max: 1
 --- !u!4 &928273132
 Transform:
   m_ObjectHideFlags: 0
@@ -384,17 +384,17 @@ MonoBehaviour:
       max: 0
     scale:
       min: 0
-      max: 0
+      max: 1
     color:
       hue:
         min: 0
-        max: 0
+        max: 1
       stauration:
         min: 0
-        max: 0
+        max: 1
       value:
         min: 0
-        max: 0
+        max: 1
 --- !u!4 &1434327070
 Transform:
   m_ObjectHideFlags: 0
@@ -495,17 +495,17 @@ MonoBehaviour:
       max: 0
     scale:
       min: 0
-      max: 0
+      max: 1
     color:
       hue:
         min: 0
-        max: 0
+        max: 1
       stauration:
         min: 0
-        max: 0
+        max: 1
       value:
         min: 0
-        max: 0
+        max: 1
 --- !u!4 &1649425083
 Transform:
   m_ObjectHideFlags: 0
@@ -560,17 +560,17 @@ MonoBehaviour:
       max: 0
     scale:
       min: 0
-      max: 0
+      max: 1
     color:
       hue:
         min: 0.18808776
-        max: 0.91787905
+        max: 1
       stauration:
         min: 0
-        max: 0
+        max: 1
       value:
         min: 0
-        max: 0
+        max: 1
   spawns:
   - {fileID: 594956967}
   - {fileID: 928273131}

@@ -303,7 +303,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   surfaceOnly: 1
-  spawnMovementDirection: 2
-  spawnSpeed:
-    min: 0
-    max: 0
+  spawnConfig:
+    spawnMovementDirection: 2
+    spawnSpeed:
+      min: 0
+      max: 5
+    angularSpeed:
+      min: 0
+      max: 360
+    scale:
+      min: 0
+      max: 1
+    color:
+      hue:
+        min: 0.35403728
+        max: 1
+      stauration:
+        min: 0.5
+        max: 1
+      value:
+        min: 0.25
+        max: 1
