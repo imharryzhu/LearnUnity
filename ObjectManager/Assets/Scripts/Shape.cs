@@ -83,6 +83,7 @@ public class Shape : PersistableObject
     public override void Save(GameDataWriter writer)
     {
         base.Save(writer);
+        writer.Write(colors.Length);
         for (int i = 0; i < colors.Length; i++)
         {
             writer.Write(colors[i]);
@@ -94,12 +95,9 @@ public class Shape : PersistableObject
     public override void Load(GameDataReader reader)
     {
         base.Load(reader);
-        if (reader.Version >= 5)
+        if (reader.Version >= 6)
         {
-            for (int i = 0; i < colors.Length; i++)
-            {
-                SetColor(reader.ReadColor(), i);
-            }
+            LoadColors(reader);
         }
         else
         {
@@ -149,6 +147,31 @@ public class Shape : PersistableObject
         get
         {
             return colors.Length;
+        }
+    }
+
+    private void LoadColors(GameDataReader reader)
+    {
+        int count = reader.ReadInt();
+        int max = count <= colors.Length ? count : colors.Length;
+        int i = 0;
+        for (; i < max; i++)
+        {
+            SetColor(reader.ReadColor(), i);
+        }
+        if (count > colors.Length)
+        {
+            for (; i < count; i++)
+            {
+                reader.ReadColor();
+            }
+        }
+        else if(count < colors.Length)
+        {
+            for (; i < colors.Length; i++)
+            {
+                SetColor(Color.white, i);
+            }
         }
     }
 }
