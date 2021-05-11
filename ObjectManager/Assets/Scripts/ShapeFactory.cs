@@ -45,6 +45,7 @@ public class ShapeFactory : ScriptableObject
             else
             {
                 instance = Instantiate(prefabs[shapeId]);
+                instance.OriginFactory = this;
                 instance.ShapeId = shapeId;
             }
             // 放到新场景中
@@ -73,6 +74,11 @@ public class ShapeFactory : ScriptableObject
     /// <param name="shape">要回收的对象</param>
     public void Reclaim(Shape shape)
     {
+        if (shape.OriginFactory != this)
+        {
+            Debug.LogError("错误的回收对象！");
+            return;
+        }
         if (recycle)
         {
             if (pools == null)
@@ -119,5 +125,31 @@ public class ShapeFactory : ScriptableObject
             }
         }
         poolScene = SceneManager.CreateScene(this.name);
+    }
+
+    /// <summary>
+    /// Unity不会保存未标记为序列化的可编写脚本对象的私有字段。
+    /// 但是，可编写脚本的对象实例本身可以在单个编辑器会话期间的播放会话之间保留下来。
+    /// 只要打开编辑器，私有字段的值就会保留，但是下次你打开Unity编辑器时，私有字段的值将被重置。
+    /// </summary>
+    [System.NonSerialized]
+    int factoryId = int.MinValue;
+    public int FactoryId
+    {
+        get
+        {
+            return factoryId;
+        }
+        set
+        {
+            if(factoryId == int.MinValue && value != int.MinValue)
+            {
+                factoryId = value;
+            }
+            else
+            {
+                Debug.LogError("不允许动态修改FactoryId");
+            }
+        }
     }
 }

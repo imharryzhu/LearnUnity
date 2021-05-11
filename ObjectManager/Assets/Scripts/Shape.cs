@@ -44,6 +44,27 @@ public class Shape : PersistableObject
         MaterialId = materialId;
     }
 
+    public ShapeFactory OriginFactory
+    {
+        get
+        {
+            return originFactory;
+        }
+        set
+        {
+            if (originFactory == null)
+            {
+                originFactory = value;
+            }
+            else
+            {
+                Debug.LogError("");
+            }
+        }
+    }
+
+    private ShapeFactory originFactory;
+
     /// <summary>
     /// 颜色
     /// </summary>
@@ -173,5 +194,10 @@ public class Shape : PersistableObject
                 SetColor(Color.white, i);
             }
         }
+    }
+
+    public void Recycle()
+    {
+        OriginFactory.Reclaim(this);
     }
 }

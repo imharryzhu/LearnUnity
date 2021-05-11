@@ -291,7 +291,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e461bcdc86f48c9a48f60f3a100fb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shapeFactory: {fileID: 11400000, guid: 8c49145226b0d4f769b78561a4d302cd, type: 2}
   storage: {fileID: 1050274234}
   createKey: 99
   saveKey: 115
@@ -300,6 +299,9 @@ MonoBehaviour:
   destoryKey: 120
   levelCount: 4
   reseedOnLoad: 0
+  shapeFactories:
+  - {fileID: 11400000, guid: 8c49145226b0d4f769b78561a4d302cd, type: 2}
+  - {fileID: 11400000, guid: 0c3b28f59a2bfc5448066bff09dbfe59, type: 2}
 --- !u!4 &447190313
 Transform:
   m_ObjectHideFlags: 0

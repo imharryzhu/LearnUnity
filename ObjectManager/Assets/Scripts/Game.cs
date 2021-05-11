@@ -7,11 +7,7 @@ using UnityEngine.SceneManagement;
 public class Game : PersistableObject
 {
     // 版本号
-    const int saveVersion = 6;
-
-    // prefab
-    [SerializeField]
-    ShapeFactory shapeFactory;
+    const int saveVersion = 7;
 
     // 存储当前场景物体的列表
     List<Shape> shapes;
@@ -39,6 +35,9 @@ public class Game : PersistableObject
 
     [SerializeField, Tooltip("加载时重置随机数种子")]
     bool reseedOnLoad;
+
+    [SerializeField, Tooltip("工厂数组")]
+    ShapeFactory[] shapeFactories;
     
     // 物体创建速度
     public float CreationSpeed { get; set; }
@@ -76,6 +75,18 @@ public class Game : PersistableObject
 
         BeginNewGame();
         StartCoroutine(LoadLevel(1));
+    }
+
+    private void OnEnable()
+    {
+        if (shapeFactories[0].FactoryId != 0)
+        {
+            for (int i = 0; i < shapeFactories.Length; i++)
+            {
+                shapeFactories[i].FactoryId = i;
+            }
+        }
+        
     }
 
     void Update()
@@ -140,8 +151,7 @@ public class Game : PersistableObject
 
     void CreateShape()
     {
-        Shape instance = shapeFactory.GetRandom();
-        GameLevel.CurrentLevel.ConfigureSpawn(instance);
+        Shape instance = GameLevel.CurrentLevel.SpawnShape();
         shapes.Add(instance);
     }
 
@@ -154,7 +164,7 @@ public class Game : PersistableObject
 
         foreach (var obj in shapes)
         {
-            shapeFactory.Reclaim(obj);
+            obj.Recycle();
         }
         shapes.Clear();
     }
@@ -164,7 +174,7 @@ public class Game : PersistableObject
         if (shapes.Count > 0)
         {
             int index = Random.Range(0, shapes.Count);
-            shapeFactory.Reclaim(shapes[index]);
+            shapes[index].Recycle();
             shapes.RemoveAt(index);
         }
     }
@@ -178,6 +188,7 @@ public class Game : PersistableObject
         for (int i = 0; i < shapes.Count; i++)
         {
             var obj = shapes[i];
+            writer.Write(shapes[i].OriginFactory.FactoryId);
             writer.Write(obj.ShapeId);
             writer.Write(obj.MaterialId);
             obj.Save(writer);
@@ -219,10 +230,11 @@ public class Game : PersistableObject
 
         for (int i = 0; i < count; i++)
         {
+            int factoryId = version >= 7 ? reader.ReadInt() : 0;
             int shapeId = reader.ReadInt();
             // materialId在版本1时，才支持
             int materialId = version > 0 ? reader.ReadInt() : 0;
-            Shape obj = shapeFactory.Get(shapeId, materialId);
+            Shape obj = shapeFactories[factoryId].Get(shapeId, materialId);
             obj.Load(reader);
             shapes.Add(obj);
         }

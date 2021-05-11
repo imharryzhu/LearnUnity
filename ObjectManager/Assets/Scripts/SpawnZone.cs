@@ -15,6 +15,9 @@ public abstract class SpawnZone : PersistableObject
             Random
         }
 
+        // 生成工厂
+        public ShapeFactory[] factories;
+
         public SpawnMovementDirection spawnMovementDirection;
         public FloatRange spawnSpeed;
         public FloatRange angularSpeed;
@@ -35,10 +38,15 @@ public abstract class SpawnZone : PersistableObject
     /// </summary>
     public abstract Vector3 SpawnPoint { get; }
 
-    public virtual void ConfigureSpawn(Shape shape)
+    /// <summary>
+    /// 生成形状
+    /// </summary>
+    public virtual Shape SpawnShape()
     {
-        Transform t = shape.transform;
+        int factoryIndex = Random.Range(0, spawnConfig.factories.Length);
+        var shape = spawnConfig.factories[factoryIndex].GetRandom();
 
+        Transform t = shape.transform;
         // 在一个球体的空间内的随机一个点
         t.localPosition = SpawnPoint;
         t.localRotation = Random.rotation;
@@ -55,7 +63,6 @@ public abstract class SpawnZone : PersistableObject
             }
         }
         
-
         shape.AngularVelocity = Random.onUnitSphere * spawnConfig.angularSpeed.RandomValueInRange;
 
         Vector3 dir;
@@ -75,5 +82,6 @@ public abstract class SpawnZone : PersistableObject
                 break;
         }
         shape.Velocity = dir * spawnConfig.spawnSpeed.RandomValueInRange;
+        return shape;
     }
 }
