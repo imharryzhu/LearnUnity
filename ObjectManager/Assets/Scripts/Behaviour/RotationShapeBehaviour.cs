@@ -6,6 +6,8 @@ public class RotationShapeBehaviour : ShapeBehaviour
 {
     public Vector3 AngularVelocity { get; set; }
 
+    public override ShapeBehaviourType BehaviourType => ShapeBehaviourType.Rotaition;
+
     public override void GameUpdate(Shape shape)
     {
         shape.transform.Rotate(AngularVelocity * Time.deltaTime);

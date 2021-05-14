@@ -62,18 +62,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Behaviour\MovementShapeBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Behaviour\RotationShapeBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Behaviour\ShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\CompositeSpawnZone.cs" />
     <Compile Include="Assets\Scripts\CubeSpawnZone.cs" />
     <Compile Include="Assets\Scripts\Game.cs" />
     <Compile Include="Assets\Scripts\GameData.cs" />
     <Compile Include="Assets\Scripts\GameLevel.cs" />
-    <Compile Include="Assets\Scripts\MovementShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\PersistableObject.cs" />
     <Compile Include="Assets\Scripts\PersistentStorage.cs" />
     <Compile Include="Assets\Scripts\RotatingObject.cs" />
-    <Compile Include="Assets\Scripts\RotationShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Shape.cs" />
-    <Compile Include="Assets\Scripts\ShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\ShapeFactory.cs" />
     <Compile Include="Assets\Scripts\ShpereSpawnZone.cs" />
     <Compile Include="Assets\Scripts\SpawnZone.cs" />

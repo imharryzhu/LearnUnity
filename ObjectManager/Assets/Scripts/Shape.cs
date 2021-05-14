@@ -109,8 +109,12 @@ public class Shape : PersistableObject
         {
             writer.Write(colors[i]);
         }
-        writer.Write(AngularVelocity);
-        writer.Write(Velocity);
+        writer.Write(behaviours.Count);
+        for (int i = 0; i < behaviours.Count; i++)
+        {
+            writer.Write((int)behaviours[i].BehaviourType);
+            behaviours[i].Save(writer);
+        }
     }
 
     public override void Load(GameDataReader reader)
@@ -125,9 +129,20 @@ public class Shape : PersistableObject
             // 颜色在version2才支持
             SetColor(reader.Version > 1 ? reader.ReadColor() : Color.white);
         }
-        // 自旋转角度
-        AngularVelocity = reader.Version >= 4 ? reader.ReadVector3() : Vector3.zero;
-        Velocity = reader.Version >= 5 ? reader.ReadVector3() : Vector3.zero;
+        if (reader.Version >= 8)
+        {
+            int count = reader.ReadInt();
+            for (int i = 0; i < count; i++)
+            {
+                var type = (ShapeBehaviourType)reader.ReadInt();
+                AddBehaviour(type).Load(reader);
+            }
+        }
+        else if (reader.Version >= 4)
+        {
+            AddBehaviour<RotationShapeBehaviour>().AngularVelocity = reader.ReadVector3();
+            AddBehaviour<MovementShapeBehaviour>().Velocity = reader.ReadVector3();
+        }
     }
 
     [SerializeField]
@@ -146,16 +161,6 @@ public class Shape : PersistableObject
 
         colors = new Color[meshRenderers.Length];
     }
-
-    /// <summary>
-    /// 自旋转角度
-    /// </summary>
-    public Vector3 AngularVelocity { get; set; }
-
-    /// <summary>
-    /// 移动速度
-    /// </summary>
-    public Vector3 Velocity { get; set; }
 
     public void GameUpdate()
     {
@@ -227,4 +232,16 @@ public class Shape : PersistableObject
         return behaviour;
     }
 
+    private ShapeBehaviour AddBehaviour(ShapeBehaviourType type)
+    {
+        switch(type)
+        {
+            case ShapeBehaviourType.Movement:
+                return AddBehaviour<MovementShapeBehaviour>();
+            case ShapeBehaviourType.Rotaition:
+                return AddBehaviour<RotationShapeBehaviour>();
+        }
+        Debug.LogError("未知的行为类型: " + type);
+        return null;
+    }
 }
