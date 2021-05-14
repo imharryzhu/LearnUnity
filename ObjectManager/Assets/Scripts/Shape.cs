@@ -58,7 +58,7 @@ public class Shape : PersistableObject
             }
             else
             {
-                Debug.LogError("");
+                Debug.LogError("不允许动态修改工厂！");
             }
         }
     }
@@ -159,8 +159,10 @@ public class Shape : PersistableObject
 
     public void GameUpdate()
     {
-        transform.Rotate(AngularVelocity * Time.deltaTime);
-        transform.localPosition += Velocity * Time.deltaTime;
+        foreach (var behaviour in behaviours)
+        {
+            behaviour.GameUpdate(this);
+        }
     }
 
     public int ColorCount
@@ -198,6 +200,31 @@ public class Shape : PersistableObject
 
     public void Recycle()
     {
+        // 回收的时候移除所有的行为
+        foreach (var behaviour in behaviours)
+        {
+            Destroy(behaviour);
+        }
+        behaviours.Clear();
+
         OriginFactory.Reclaim(this);
     }
+
+    /// <summary>
+    /// 对象行为列表
+    /// </summary>
+    List<ShapeBehaviour> behaviours = new List<ShapeBehaviour>();
+
+    /// <summary>
+    /// 泛型强制约束传入的类型
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T AddBehaviour<T>() where T : ShapeBehaviour
+    {
+        T behaviour = gameObject.AddComponent<T>();
+        behaviours.Add(behaviour);
+        return behaviour;
+    }
+
 }

@@ -62,8 +62,13 @@ public abstract class SpawnZone : PersistableObject
                 shape.SetColor(spawnConfig.color.RandomInRange, i);
             }
         }
-        
-        shape.AngularVelocity = Random.onUnitSphere * spawnConfig.angularSpeed.RandomValueInRange;
+
+        float angularSpeed = spawnConfig.angularSpeed.RandomValueInRange;
+        if (angularSpeed != 0f) // 判断0值，避免组件被调用，节省性能
+        {
+            var rotation = shape.AddBehaviour<RotationShapeBehaviour>();
+            rotation.AngularVelocity = Random.onUnitSphere * angularSpeed;
+        }
 
         Vector3 dir;
         switch (spawnConfig.spawnMovementDirection)
@@ -81,7 +86,12 @@ public abstract class SpawnZone : PersistableObject
                 dir = transform.forward;
                 break;
         }
-        shape.Velocity = dir * spawnConfig.spawnSpeed.RandomValueInRange;
+
+        float speed = spawnConfig.spawnSpeed.RandomValueInRange;
+        if (speed != 0f){
+            var movement = shape.AddBehaviour<MovementShapeBehaviour>();
+            movement.Velocity = dir * speed;
+        }
         return shape;
     }
 }
