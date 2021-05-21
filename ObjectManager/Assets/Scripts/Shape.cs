@@ -208,11 +208,11 @@ public class Shape : PersistableObject
         // 回收的时候移除所有的行为
         foreach (var behaviour in behaviours)
         {
-            Destroy(behaviour);
+            behaviour.Recycle();
         }
         behaviours.Clear();
-
         OriginFactory.Reclaim(this);
+
     }
 
     /// <summary>
@@ -221,13 +221,13 @@ public class Shape : PersistableObject
     List<ShapeBehaviour> behaviours = new List<ShapeBehaviour>();
 
     /// <summary>
-    /// 泛型强制约束传入的类型
+    /// 泛型强制约束传入的类型，new()声明了T必须有构造函数
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public T AddBehaviour<T>() where T : ShapeBehaviour
+    public T AddBehaviour<T>() where T : ShapeBehaviour, new()
     {
-        T behaviour = gameObject.AddComponent<T>();
+        T behaviour = ShapeBehaviourPool<T>.Get();
         behaviours.Add(behaviour);
         return behaviour;
     }

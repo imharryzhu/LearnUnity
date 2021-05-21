@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RotationShapeBehaviour : ShapeBehaviour
+public sealed class RotationShapeBehaviour : ShapeBehaviour
 {
     public Vector3 AngularVelocity { get; set; }
 
@@ -21,5 +21,10 @@ public class RotationShapeBehaviour : ShapeBehaviour
     public override void Save(GameDataWriter writer)
     {
         writer.Write(AngularVelocity);
+    }
+
+    public override void Recycle()
+    {
+        ShapeBehaviourPool<RotationShapeBehaviour>.Reclaim(this);
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MovementShapeBehaviour : ShapeBehaviour
+public sealed class MovementShapeBehaviour : ShapeBehaviour
 {
     public Vector3 Velocity { get; set; }
 
@@ -21,5 +21,10 @@ public class MovementShapeBehaviour : ShapeBehaviour
     public override void Save(GameDataWriter writer)
     {
         writer.Write(Velocity);
+    }
+
+    public override void Recycle()
+    {
+        ShapeBehaviourPool<MovementShapeBehaviour>.Reclaim(this);
     }
 }

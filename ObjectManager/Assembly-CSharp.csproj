@@ -65,6 +65,7 @@
     <Compile Include="Assets\Scripts\Behaviour\MovementShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Behaviour\RotationShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Behaviour\ShapeBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Behaviour\ShapeBehaviourPool.cs" />
     <Compile Include="Assets\Scripts\CompositeSpawnZone.cs" />
     <Compile Include="Assets\Scripts\CubeSpawnZone.cs" />
     <Compile Include="Assets\Scripts\Game.cs" />
