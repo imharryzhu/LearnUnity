@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 class ShapeBehaviourPool<T> where T : ShapeBehaviour, new()
 {
@@ -13,13 +14,24 @@ class ShapeBehaviourPool<T> where T : ShapeBehaviour, new()
     {
         if (stack.Count > 0)
         {
-            return stack.Pop();
+            T behaviour = stack.Pop();
+#if UNITY_EDITOR
+            behaviour.IsReclaimed = false;
+#endif
+            return behaviour;
         }
-        return new T();
+#if UNITY_EDITOR
+        return ScriptableObject.CreateInstance<T>();
+#else
+         return new T();
+#endif
     }
 
     public static void Reclaim(T behaviour)
     {
+#if UNITY_EDITOR
+        behaviour.IsReclaimed = true;
+#endif
         stack.Push(behaviour);
     }
 
