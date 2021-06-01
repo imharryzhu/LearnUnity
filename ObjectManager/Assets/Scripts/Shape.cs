@@ -101,6 +101,11 @@ public class Shape : PersistableObject
         colors[index] = color;
     }
 
+    /// <summary>
+    /// 记录自己经过的时间 
+    /// </summary>
+    public float Age { get; private set; }
+
     public override void Save(GameDataWriter writer)
     {
         base.Save(writer);
@@ -115,6 +120,7 @@ public class Shape : PersistableObject
             writer.Write((int)behaviours[i].BehaviourType);
             behaviours[i].Save(writer);
         }
+        writer.Write(Age);
     }
 
     public override void Load(GameDataReader reader)
@@ -146,6 +152,11 @@ public class Shape : PersistableObject
             AddBehaviour<RotationShapeBehaviour>().AngularVelocity = reader.ReadVector3();
             AddBehaviour<MovementShapeBehaviour>().Velocity = reader.ReadVector3();
         }
+
+        if (reader.Version >= 9)
+        {
+            Age = reader.ReadFloat();
+        }
     }
 
     [SerializeField]
@@ -167,6 +178,7 @@ public class Shape : PersistableObject
 
     public void GameUpdate()
     {
+        Age += Time.deltaTime;
         foreach (var behaviour in behaviours)
         {
             behaviour.GameUpdate(this);
@@ -208,6 +220,7 @@ public class Shape : PersistableObject
 
     public void Recycle()
     {
+        Age = 0f;
         // 回收的时候移除所有的行为
         foreach (var behaviour in behaviours)
         {

@@ -24,7 +24,7 @@ public sealed class OscillationShapeBehaviour : ShapeBehaviour
 
     public override void GameUpdate(Shape shape)
     {
-        float oscillation = Mathf.Sin(2f * Mathf.PI * Frequency * Time.time);
+        float oscillation = Mathf.Sin(2f * Mathf.PI * Frequency * shape.Age);
         shape.transform.localPosition += 
             (oscillation - previousOscillation) * Offset;
         previousOscillation = oscillation;

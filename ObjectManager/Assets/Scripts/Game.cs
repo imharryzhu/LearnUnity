@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class Game : PersistableObject
 {
     // 版本号
-    const int saveVersion = 8;
+    const int saveVersion = 9;
 
     // 存储当前场景物体的列表
     List<Shape> shapes;
