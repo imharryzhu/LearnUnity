@@ -10,24 +10,43 @@ public sealed class OscillationShapeBehaviour : ShapeBehaviour
             return ShapeBehaviourType.Oscillation;
         }
     }
+    /// <summary>
+    /// 最大偏移量
+    /// </summary>
+    public Vector3 Offset { get; set; }
+
+    /// <summary>
+    /// 摆动频率
+    /// </summary>
+    public float Frequency { get; set; }
+
+    private float previousOscillation;
 
     public override void GameUpdate(Shape shape)
     {
-        throw new NotImplementedException();
-    }
-
-    public override void Load(GameDataReader reader)
-    {
-        throw new NotImplementedException();
+        float oscillation = Mathf.Sin(2f * Mathf.PI * Frequency * Time.time);
+        shape.transform.localPosition += 
+            (oscillation - previousOscillation) * Offset;
+        previousOscillation = oscillation;
     }
 
     public override void Recycle()
     {
-        throw new NotImplementedException();
+        previousOscillation = 0f;
+        ShapeBehaviourPool<OscillationShapeBehaviour>.Reclaim(this);
     }
 
     public override void Save(GameDataWriter writer)
     {
-        ShapeBehaviourPool<OscillationShapeBehaviour>.Reclaim(this);
+        writer.Write(Offset);
+        writer.Write(Frequency);
+        writer.Write(previousOscillation);
+    }
+
+    public override void Load(GameDataReader reader)
+    {
+        Offset = reader.ReadVector3();
+        Frequency = reader.ReadFloat();
+        previousOscillation = reader.ReadFloat();
     }
 }

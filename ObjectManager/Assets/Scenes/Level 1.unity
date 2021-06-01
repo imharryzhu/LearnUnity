@@ -310,10 +310,10 @@ MonoBehaviour:
     spawnMovementDirection: 2
     spawnSpeed:
       min: 0
-      max: 5
+      max: 0
     angularSpeed:
       min: 0
-      max: 360
+      max: 0
     scale:
       min: 0
       max: 1
@@ -328,3 +328,10 @@ MonoBehaviour:
         min: 0.25
         max: 1
     uniformColor: 1
+    oscillationDirection: 2
+    oscillationAmplitude:
+      min: 0
+      max: 10
+    oscillationFrequency:
+      min: 0
+      max: 5
