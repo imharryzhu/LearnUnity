@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Behaviour\MovementShapeBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Behaviour\OscillationShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Behaviour\RotationShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Behaviour\ShapeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Behaviour\ShapeBehaviourPool.cs" />

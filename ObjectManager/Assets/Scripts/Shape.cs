@@ -134,8 +134,11 @@ public class Shape : PersistableObject
             int count = reader.ReadInt();
             for (int i = 0; i < count; i++)
             {
-                var type = (ShapeBehaviourType)reader.ReadInt();
-                AddBehaviour(type).Load(reader);
+                var type = ((ShapeBehaviourType)reader.ReadInt());
+                var behaviour = type.GetInstance();
+                type.Print();
+                behaviours.Add(behaviour);
+                behaviour.Load(reader);
             }
         }
         else if (reader.Version >= 4)
@@ -212,7 +215,6 @@ public class Shape : PersistableObject
         }
         behaviours.Clear();
         OriginFactory.Reclaim(this);
-
     }
 
     /// <summary>
@@ -230,18 +232,5 @@ public class Shape : PersistableObject
         T behaviour = ShapeBehaviourPool<T>.Get();
         behaviours.Add(behaviour);
         return behaviour;
-    }
-
-    private ShapeBehaviour AddBehaviour(ShapeBehaviourType type)
-    {
-        switch(type)
-        {
-            case ShapeBehaviourType.Movement:
-                return AddBehaviour<MovementShapeBehaviour>();
-            case ShapeBehaviourType.Rotaition:
-                return AddBehaviour<RotationShapeBehaviour>();
-        }
-        Debug.LogError("未知的行为类型: " + type);
-        return null;
     }
 }

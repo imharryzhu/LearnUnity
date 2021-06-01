@@ -30,5 +30,31 @@ public abstract class ShapeBehaviour
 /// </summary>
 public enum ShapeBehaviourType
 {
-    Movement, Rotaition
+    Movement, Rotaition, Oscillation
+}
+
+/// <summary>
+/// 枚举扩展方法
+/// </summary>
+public static class ShapeBehaviourTypeMethods
+{
+    public static ShapeBehaviour GetInstance(this ShapeBehaviourType type)
+    {
+        switch(type)
+        {
+            case ShapeBehaviourType.Movement:
+                return ShapeBehaviourPool<MovementShapeBehaviour>.Get();
+            case ShapeBehaviourType.Rotaition:
+                return ShapeBehaviourPool<RotationShapeBehaviour>.Get();
+            case ShapeBehaviourType.Oscillation:
+                return ShapeBehaviourPool<OscillationShapeBehaviour>.Get();
+        }
+        Debug.Log("Forgot to support " + type);
+        return null;
+    }
+
+    public static void Print(this ShapeBehaviourType type)
+    {
+        Debug.Log("枚举扩展方法Print: " + type.ToString());
+    }
 }
