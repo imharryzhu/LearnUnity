@@ -8,9 +8,10 @@ public sealed class MovementShapeBehaviour : ShapeBehaviour
 
     public override ShapeBehaviourType BehaviourType => ShapeBehaviourType.Movement;
 
-    public override void GameUpdate(Shape shape)
+    public override bool GameUpdate(Shape shape)
     {
         shape.transform.localPosition += Velocity * Time.deltaTime;
+        return true;
     }
 
     public override void Load(GameDataReader reader)

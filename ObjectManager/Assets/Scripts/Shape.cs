@@ -2,6 +2,32 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public struct ShapeInstance
+{
+    public Shape Shape { get; private set; }
+    int instanceId;
+
+    public ShapeInstance(Shape shape)
+    {
+        Shape = shape;
+        instanceId = shape.InstanceId;
+    }
+
+    public bool IsVaild
+    {
+        get
+        {
+            return Shape && instanceId == Shape.InstanceId;
+        }
+    }
+
+    public static implicit operator ShapeInstance(Shape shape)
+    {
+        return new ShapeInstance(shape);
+    }
+}
+
 public class Shape : PersistableObject
 {
     /// <summary>
@@ -106,6 +132,8 @@ public class Shape : PersistableObject
     /// </summary>
     public float Age { get; private set; }
 
+    public int InstanceId { get; private set; }
+
     public override void Save(GameDataWriter writer)
     {
         base.Save(writer);
@@ -179,9 +207,13 @@ public class Shape : PersistableObject
     public void GameUpdate()
     {
         Age += Time.deltaTime;
-        foreach (var behaviour in behaviours)
+        for (int i = 0; i < behaviours.Count; i++)
         {
-            behaviour.GameUpdate(this);
+            if (!behaviours[i].GameUpdate(this))
+            {
+                behaviours[i].Recycle();
+                behaviours.RemoveAt(i--);
+            }
         }
     }
 
@@ -221,6 +253,7 @@ public class Shape : PersistableObject
     public void Recycle()
     {
         Age = 0f;
+        InstanceId++;
         // 回收的时候移除所有的行为
         foreach (var behaviour in behaviours)
         {

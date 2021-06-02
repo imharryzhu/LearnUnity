@@ -8,9 +8,10 @@ public sealed class RotationShapeBehaviour : ShapeBehaviour
 
     public override ShapeBehaviourType BehaviourType => ShapeBehaviourType.Rotaition;
 
-    public override void GameUpdate(Shape shape)
+    public override bool GameUpdate(Shape shape)
     {
         shape.transform.Rotate(AngularVelocity * Time.deltaTime);
+        return true;
     }
 
     public override void Load(GameDataReader reader)
