@@ -50,8 +50,8 @@ public class GameLevel : PersistableObject
     /// <summary>
     /// 配置物体的各种数据信息
     /// </summary>
-    public Shape SpawnShape()
+    public void SpawnShapes()
     {
-        return spawnZone.SpawnShape();
+        spawnZone.SpawnShapes();
     }
 }

@@ -38,6 +38,8 @@ public class Game : PersistableObject
 
     [SerializeField, Tooltip("工厂数组")]
     ShapeFactory[] shapeFactories;
+
+    public static Game Instance { get; private set; }
     
     // 物体创建速度
     public float CreationSpeed { get; set; }
@@ -79,6 +81,7 @@ public class Game : PersistableObject
 
     private void OnEnable()
     {
+        Instance = this;
         if (shapeFactories[0].FactoryId != 0)
         {
             for (int i = 0; i < shapeFactories.Length; i++)
@@ -92,7 +95,7 @@ public class Game : PersistableObject
     {
         if (Input.GetKeyUp(createKey))
         {
-            CreateShape();
+            GameLevel.CurrentLevel.SpawnShapes();
         }
         else if(Input.GetKeyUp(newGameKey))
         {
@@ -129,7 +132,7 @@ public class Game : PersistableObject
         while (creationProgress >= 1f)
         {
             creationProgress -= 1f;
-            CreateShape();
+            GameLevel.CurrentLevel.SpawnShapes();
         }
 
         destructionProgress += Time.deltaTime * DestructionSpeed;
@@ -146,12 +149,6 @@ public class Game : PersistableObject
         {
             shapes[i].GameUpdate();
         }
-    }
-
-    void CreateShape()
-    {
-        Shape instance = GameLevel.CurrentLevel.SpawnShape();
-        shapes.Add(instance);
     }
 
     void BeginNewGame()
@@ -235,7 +232,6 @@ public class Game : PersistableObject
             int materialId = version > 0 ? reader.ReadInt() : 0;
             Shape obj = shapeFactories[factoryId].Get(shapeId, materialId);
             obj.Load(reader);
-            shapes.Add(obj);
         }
     }
 
@@ -256,5 +252,10 @@ public class Game : PersistableObject
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(levelIndex));
         loadedLevelBuildIndex = levelIndex;
         this.enabled = true;
+    }
+
+    public void AddShape(Shape shape)
+    {
+        shapes.Add(shape);
     }
 }

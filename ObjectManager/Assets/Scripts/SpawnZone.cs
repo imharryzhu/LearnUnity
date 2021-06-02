@@ -44,7 +44,7 @@ public abstract class SpawnZone : PersistableObject
     /// <summary>
     /// 生成形状
     /// </summary>
-    public virtual Shape SpawnShape()
+    public virtual void SpawnShapes()
     {
         int factoryIndex = Random.Range(0, spawnConfig.factories.Length);
         var shape = spawnConfig.factories[factoryIndex].GetRandom();
@@ -54,17 +54,8 @@ public abstract class SpawnZone : PersistableObject
         t.localPosition = SpawnPoint;
         t.localRotation = Random.rotation;
         t.localScale = spawnConfig.scale.RandomValueInRange * Vector3.one;
-        if (spawnConfig.uniformColor)
-        {
-            shape.SetColor(spawnConfig.color.RandomInRange);
-        }
-        else
-        {
-            for (int i = 0; i < shape.ColorCount; i++)
-            {
-                shape.SetColor(spawnConfig.color.RandomInRange, i);
-            }
-        }
+
+        SetupColor(shape);
 
         float angularSpeed = spawnConfig.angularSpeed.RandomValueInRange;
         if (angularSpeed != 0f) // 判断0值，避免组件被调用，节省性能
@@ -80,7 +71,7 @@ public abstract class SpawnZone : PersistableObject
         }
 
         SetupOscillation(shape);
-        return shape;
+        CreateSatelliteFor(shape);
     }
 
     private Vector3 GetDirectionVector(SpawnConfiguration.SpawnMovementDirection direction, Transform t)
@@ -111,4 +102,35 @@ public abstract class SpawnZone : PersistableObject
         oscillation.Frequency = frequency;
     }
 
+    private void SetupColor(Shape shape)
+    {
+        if (spawnConfig.uniformColor)
+        {
+            shape.SetColor(spawnConfig.color.RandomInRange);
+        }
+        else
+        {
+            for (int i = 0; i < shape.ColorCount; i++)
+            {
+                shape.SetColor(spawnConfig.color.RandomInRange, i);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 创建卫星形状
+    /// </summary>
+    /// <param name="focalShape"></param>
+    void CreateSatelliteFor(Shape focalShape)
+    {
+        int factoryIndex = Random.Range(0, spawnConfig.factories.Length);
+        Shape shape = spawnConfig.factories[factoryIndex].GetRandom();
+        Transform t = shape.transform;
+        t.localRotation = Random.rotation;
+        t.localScale = focalShape.transform.localScale * 0.5f;
+        t.localPosition = focalShape.transform.localPosition + Vector3.up;
+        shape.AddBehaviour<MovementShapeBehaviour>().Velocity = Vector3.up;
+
+        SetupColor(shape);
+    }
 }
