@@ -33,8 +33,16 @@ public class GameBoard : MonoBehaviour
                 tile.transform.SetParent(transform, false);
                 tile.transform.localPosition = new Vector3(
                     x - offset.x, 0f, y - offset.y);
+
+                if (x > 0)
+                {
+                    GameTile.MakeEastWestNeighbors(tile, gameTiles[i - 1]);
+                }
+                if (y > 0)
+                {
+                    GameTile.MakeNorthSouthNeighbors(tile, gameTiles[i - size.x]);
+                }
             }
         }
-
     }
 }
