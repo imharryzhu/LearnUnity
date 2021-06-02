@@ -13,10 +13,19 @@ class SatelliteShapeBehaviour : ShapeBehaviour
     {
         this.focalShape = focalShape;
         this.frequency = oribtFrequency;
-        cosOffset = Vector3.right;
-        sinOffset = Vector3.forward;
+        Vector3 orbitAxis = Random.onUnitSphere;
+        do
+        {
+            cosOffset = Vector3.Cross(orbitAxis, Random.onUnitSphere).normalized;
+        } while (cosOffset.sqrMagnitude < 0.1f); // 避免值过小导致数值为0
+        sinOffset = Vector3.Cross(cosOffset, orbitAxis);
         cosOffset *= orbitRadius;
         sinOffset *= orbitRadius;
+
+        shape.AddBehaviour<RotationShapeBehaviour>().AngularVelocity =
+            -360f * frequency * 
+            shape.transform.InverseTransformDirection(orbitAxis);
+
         GameUpdate(shape);
     }
 
