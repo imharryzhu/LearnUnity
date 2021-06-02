@@ -30,7 +30,10 @@ public abstract class ShapeBehaviour
 /// </summary>
 public enum ShapeBehaviourType
 {
-    Movement, Rotaition, Oscillation
+    Movement, // 移动
+    Rotaition, // 旋转
+    Oscillation, // 正弦运动行为
+    Satellite // 卫星运动行为
 }
 
 /// <summary>
@@ -48,6 +51,8 @@ public static class ShapeBehaviourTypeMethods
                 return ShapeBehaviourPool<RotationShapeBehaviour>.Get();
             case ShapeBehaviourType.Oscillation:
                 return ShapeBehaviourPool<OscillationShapeBehaviour>.Get();
+            case ShapeBehaviourType.Satellite:
+                return ShapeBehaviourPool<SatelliteShapeBehaviour>.Get();
         }
         Debug.Log("Forgot to support " + type);
         return null;

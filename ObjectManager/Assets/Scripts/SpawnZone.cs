@@ -15,6 +15,18 @@ public abstract class SpawnZone : PersistableObject
             Random
         }
 
+        /// <summary>
+        /// 卫星的属性配置
+        /// </summary>
+        [System.Serializable]
+        public struct SatelliteConfiguration
+        {
+            [FloatRangeSlider(0.1f, 1f)]
+            public FloatRange relativeScale;
+            public FloatRange orbitRadius;
+            public FloatRange orbitFrequency;
+        }
+
         // 生成工厂
         public ShapeFactory[] factories;
 
@@ -27,6 +39,7 @@ public abstract class SpawnZone : PersistableObject
         public SpawnMovementDirection oscillationDirection;
         public FloatRange oscillationAmplitude;
         public FloatRange oscillationFrequency;
+        public SatelliteConfiguration satellite;
     }
 
     [SerializeField, Tooltip("仅表面随机点")]
@@ -127,10 +140,12 @@ public abstract class SpawnZone : PersistableObject
         Shape shape = spawnConfig.factories[factoryIndex].GetRandom();
         Transform t = shape.transform;
         t.localRotation = Random.rotation;
-        t.localScale = focalShape.transform.localScale * 0.5f;
-        t.localPosition = focalShape.transform.localPosition + Vector3.up;
-        shape.AddBehaviour<MovementShapeBehaviour>().Velocity = Vector3.up;
-
+        t.localScale = focalShape.transform.localScale * 
+            spawnConfig.satellite.relativeScale.RandomValueInRange;
         SetupColor(shape);
+        shape.AddBehaviour<SatelliteShapeBehaviour>().Initialize(
+            shape, focalShape,
+            spawnConfig.satellite.orbitRadius.RandomValueInRange, 
+            spawnConfig.satellite.orbitFrequency.RandomValueInRange);
     }
 }
