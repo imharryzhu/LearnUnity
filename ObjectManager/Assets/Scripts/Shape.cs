@@ -250,6 +250,8 @@ public class Shape : PersistableObject
         }
     }
 
+    public int SaveIndex { get; set; }
+
     public void Recycle()
     {
         Age = 0f;

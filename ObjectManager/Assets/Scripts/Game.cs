@@ -256,6 +256,7 @@ public class Game : PersistableObject
 
     public void AddShape(Shape shape)
     {
+        shape.SaveIndex = shapes.Count;
         shapes.Add(shape);
     }
 }
