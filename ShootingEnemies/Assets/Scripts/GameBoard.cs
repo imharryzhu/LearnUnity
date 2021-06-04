@@ -44,6 +44,15 @@ public class GameBoard : MonoBehaviour
                 {
                     GameTile.MakeNorthSouthNeighbors(tile, tiles[i - 1]);
                 }
+
+                tile.name = string.Format("Tile<{0}>({1}, {2})", i, x, y);
+                
+                // x坐标为偶数，设置为IsAlternative
+                tile.IsAlternative = (x & 1) == 0;
+                if ((y & 1) == 0)
+                {
+                    tile.IsAlternative = !tile.IsAlternative;
+                }
             }
         }
         FindPaths();
@@ -58,18 +67,28 @@ public class GameBoard : MonoBehaviour
         }
 
         // 从0开始寻路
-        tiles[0].BecomeDestination();
-        searchFrontier.Enqueue(tiles[0]);
+        tiles[tiles.Length / 2].BecomeDestination();
+        searchFrontier.Enqueue(tiles[tiles.Length / 2]);
 
         while(searchFrontier.Count > 0)
         {
             GameTile tile = searchFrontier.Dequeue();
-            if(tile)
+            if(tile != null)
             {
-                searchFrontier.Enqueue(tile.GrowPathNorth());
-                searchFrontier.Enqueue(tile.GrowPathEast());
-                searchFrontier.Enqueue(tile.GrowPathSouth());
-                searchFrontier.Enqueue(tile.GrowPathWest());
+                if (tile.IsAlternative)
+                {
+                    searchFrontier.Enqueue(tile.GrowPathNorth());
+                    searchFrontier.Enqueue(tile.GrowPathSouth());
+                    searchFrontier.Enqueue(tile.GrowPathEast());
+                    searchFrontier.Enqueue(tile.GrowPathWest());
+                }
+                else
+                {
+                    searchFrontier.Enqueue(tile.GrowPathWest());
+                    searchFrontier.Enqueue(tile.GrowPathEast());
+                    searchFrontier.Enqueue(tile.GrowPathSouth());
+                    searchFrontier.Enqueue(tile.GrowPathNorth());
+                }
             }
         }
         foreach (var tile in tiles)

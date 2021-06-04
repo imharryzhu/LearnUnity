@@ -12,6 +12,11 @@ public class GameTile : MonoBehaviour
     private GameTile nextOnPath;
     private int distance;
 
+    /// <summary>
+    /// 否是一个可选的
+    /// </summary>
+    public bool IsAlternative { get; set; }
+
     #region 寻路相关
 
     /// <summary>
@@ -96,5 +101,5 @@ public class GameTile : MonoBehaviour
         north.south = south;
         south.north = north;
     }
-#endregion
+    #endregion
 }
