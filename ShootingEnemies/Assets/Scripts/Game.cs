@@ -16,7 +16,16 @@ public class Game : MonoBehaviour
     // 获取鼠标在屏幕中的射线
     private Ray mouseRay => Camera.main.ScreenPointToRay(Input.mousePosition);
 
-    private void HandleTouch()
+    private void HandleLeftClick()
+    {
+        GameTile tile = board.GetTile(mouseRay);
+        if (tile != null)
+        {
+            board.ToggleWall(tile);
+        }
+    }
+
+    private void HandleRightClick()
     {
         GameTile tile = board.GetTile(mouseRay);
         if (tile != null)
@@ -25,7 +34,7 @@ public class Game : MonoBehaviour
         }
     }
 
-#region Unity Life Functions
+    #region Unity Life Functions
 
     private void Awake()
     {
@@ -37,7 +46,16 @@ public class Game : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
-            HandleTouch();
+            HandleLeftClick();
+        }
+        else if(Input.GetMouseButtonUp(1))
+        {
+            HandleRightClick();
+        }
+
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            board.ShowPaths = !board.ShowPaths;
         }
     }
 
@@ -55,6 +73,5 @@ public class Game : MonoBehaviour
             boardSize.y = 2;
         }
     }
-
 #endregion
 }

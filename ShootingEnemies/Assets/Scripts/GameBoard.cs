@@ -15,6 +15,27 @@ public class GameBoard : MonoBehaviour
     private GameTile[] tiles;
     // 搜索路径的队列
     private Queue<GameTile> searchFrontier = new Queue<GameTile>();
+    // 是否显示路径的方向箭头
+    private bool showPaths;
+    public bool ShowPaths
+    {
+        get => showPaths;
+        set
+        {
+            showPaths = value;
+            foreach (var tile in tiles)
+            {
+                if (showPaths)
+                {
+                    tile.ShowPath();
+                }
+                else
+                {
+                    tile.HidePath();
+                }
+            }
+        }
+    }
 
     public void Initialized(Vector2Int size, GameTileContentFactory tileContentFactory)
     {
@@ -86,6 +107,28 @@ public class GameBoard : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 将tile设置为墙
+    /// </summary>
+    /// <param name="tile"></param>
+    public void ToggleWall(GameTile tile)
+    {
+        if (tile.Content.Type == GameTileContentType.Wall)
+        {
+            tile.Content = tileContentFactory.Get(GameTileContentType.Empty);
+            FindPaths();
+        }
+        else if(tile.Content.Type == GameTileContentType.Empty) // 只允许空瓦片切换为墙
+        {
+            tile.Content = tileContentFactory.Get(GameTileContentType.Wall);
+            if(!FindPaths())
+            {
+                tile.Content = tileContentFactory.Get(GameTileContentType.Empty);
+                FindPaths();
+            }
+        }
+    }
+
     private bool FindPaths()
     {
         // 先重置所有格子的寻路数据
@@ -128,9 +171,22 @@ public class GameBoard : MonoBehaviour
                 }
             }
         }
+
+        // 避免出现“死格子”
         foreach (var tile in tiles)
         {
-            tile.ShowPath();
+            if (!tile.HasPath)
+            {
+                return false;
+            }
+        }
+
+        if (showPaths)
+        {
+            foreach (var tile in tiles)
+            {
+                tile.ShowPath();
+            }
         }
         return true;
     }

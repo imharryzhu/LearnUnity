@@ -16,3 +16,5 @@ MonoBehaviour:
     type: 3}
   emptyPrefab: {fileID: 6993866941698396361, guid: 4d35c663661cbe84a89038d9e79b0823,
     type: 3}
+  wallPrefab: {fileID: 7212623006986066479, guid: 3b5aa3827fa13e64eb8aecc89bf0e80d,
+    type: 3}

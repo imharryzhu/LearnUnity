@@ -13,6 +13,9 @@ public class GameTileContentFactory : ScriptableObject
     [SerializeField, Tooltip("空的")]
     GameTileContent emptyPrefab;
 
+    [SerializeField, Tooltip("墙")]
+    GameTileContent wallPrefab;
+
     private Scene contentScene;
     #endregion
 
@@ -33,6 +36,8 @@ public class GameTileContentFactory : ScriptableObject
                 return Get(destionationPrefab);
             case GameTileContentType.Empty:
                 return Get(emptyPrefab);
+            case GameTileContentType.Wall:
+                return Get(wallPrefab);
         }
         Debug.Assert(false, "未定义的格子类型: " + type);
         return null;
