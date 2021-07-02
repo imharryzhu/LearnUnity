@@ -34,6 +34,25 @@ public class GameTile : MonoBehaviour
     public bool HasPath => distance != int.MaxValue;
 
     /// <summary>
+    /// 格子内容对象
+    /// </summary>
+    private GameTileContent content;
+    public GameTileContent Content
+    {
+        get => content;
+        set
+        {
+            Debug.Assert(value != null, "Null assigned to content!");
+            if (content != null)
+            {
+                content.Recycle();
+            }
+            content = value;
+            content.transform.localPosition = transform.localPosition;
+        }
+    }
+
+    /// <summary>
     /// 重置寻路状态
     /// </summary>
     public void ClearPath()

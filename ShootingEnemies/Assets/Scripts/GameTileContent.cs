@@ -21,7 +21,7 @@ public class GameTileContent : MonoBehaviour
         get => originFactory;
         set
         {
-            Debug.Assert(originFactory != null, "不可以二次赋值创建工厂！");
+            Debug.Assert(originFactory == null, "不可以二次赋值创建工厂！");
             originFactory = value;
         }
     }

@@ -10,6 +10,20 @@ public class Game : MonoBehaviour
     [SerializeField, Tooltip("游戏地面")]
     GameBoard board;
 
+    [SerializeField, Tooltip("格子内容工厂")]
+    GameTileContentFactory tileContentFactory;
+    
+    // 获取鼠标在屏幕中的射线
+    private Ray mouseRay => Camera.main.ScreenPointToRay(Input.mousePosition);
+
+    private void HandleTouch()
+    {
+        GameTile tile = board.GetTile(mouseRay);
+        if (tile != null)
+        {
+            tile.Content = tileContentFactory.Get(GameTileContentType.Destination);
+        }
+    }
 
 #region Unity Life Functions
 
@@ -17,6 +31,14 @@ public class Game : MonoBehaviour
     {
         // 初始化游戏地面
         board.Initialized(boardSize);
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonUp(0))
+        {
+            HandleTouch();
+        }
     }
 
     /// <summary>
@@ -34,6 +56,5 @@ public class Game : MonoBehaviour
         }
     }
 
-
-    #endregion
+#endregion
 }

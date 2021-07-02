@@ -96,4 +96,23 @@ public class GameBoard : MonoBehaviour
             tile.ShowPath();
         }
     }
+
+    /// <summary>
+    /// 根据射线获得点击的格子
+    /// </summary>
+    /// <param name="ray"></param>
+    /// <returns></returns>
+    public GameTile GetTile(Ray ray)
+    {
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            int x = (int)(hit.point.x + size.x * .5f);
+            int y = (int)(hit.point.z + size.y * .5f);
+            if ( x >= 0 && x < size.x && y >= 0 && y < size.y)
+            {
+                return tiles[y + x * size.y];
+            }
+        }
+        return null;
+    }
 }
