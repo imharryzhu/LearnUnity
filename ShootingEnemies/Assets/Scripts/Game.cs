@@ -21,7 +21,7 @@ public class Game : MonoBehaviour
         GameTile tile = board.GetTile(mouseRay);
         if (tile != null)
         {
-            tile.Content = tileContentFactory.Get(GameTileContentType.Destination);
+            board.ToggleDestination(tile);
         }
     }
 
@@ -30,7 +30,7 @@ public class Game : MonoBehaviour
     private void Awake()
     {
         // 初始化游戏地面
-        board.Initialized(boardSize);
+        board.Initialized(boardSize, tileContentFactory);
     }
 
     private void Update()

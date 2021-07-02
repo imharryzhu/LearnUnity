@@ -11,13 +11,15 @@ public class GameBoard : MonoBehaviour
     GameTile tilePrefab;
 
     private Vector2Int size;
+    private GameTileContentFactory tileContentFactory;
     private GameTile[] tiles;
     // 搜索路径的队列
     private Queue<GameTile> searchFrontier = new Queue<GameTile>();
 
-    public void Initialized(Vector2Int size)
+    public void Initialized(Vector2Int size, GameTileContentFactory tileContentFactory)
     {
         this.size = size;
+        this.tileContentFactory = tileContentFactory;
         ground.localScale = new Vector3(size.x, size.y, 1f);
 
         // 由于中心点在箭头的中心，所以做个偏移
@@ -53,22 +55,57 @@ public class GameBoard : MonoBehaviour
                 {
                     tile.IsAlternative = !tile.IsAlternative;
                 }
+
+                // 默认赋值空内容
+                tile.Content = tileContentFactory.Get(GameTileContentType.Empty);
             }
         }
-        FindPaths();
+        ToggleDestination(tiles[tiles.Length / 2]);
     }
 
-    private void FindPaths()
+    /// <summary>
+    /// 将tile设置为目标点
+    /// </summary>
+    /// <param name="tile"></param>
+    public void ToggleDestination(GameTile tile)
+    {
+        if(tile.Content.Type == GameTileContentType.Destination)
+        {
+            tile.Content = tileContentFactory.Get(GameTileContentType.Empty);
+            // 避免因为最后一个而导致没有路径
+            if (!FindPaths())
+            {
+                tile.Content = tileContentFactory.Get(GameTileContentType.Destination);
+                FindPaths();
+            }
+        }
+        else if(tile.Content.Type == GameTileContentType.Empty)
+        {
+            tile.Content = tileContentFactory.Get(GameTileContentType.Destination);
+            FindPaths();
+        }
+    }
+
+    private bool FindPaths()
     {
         // 先重置所有格子的寻路数据
         foreach (var tile in tiles)
         {
-            tile.ClearPath();
+            if(tile.Content.Type == GameTileContentType.Destination)
+            {
+                tile.BecomeDestination();
+                searchFrontier.Enqueue(tile);
+            } 
+            else 
+            {
+                tile.ClearPath();
+            } 
         }
 
-        // 从0开始寻路
-        tiles[tiles.Length / 2].BecomeDestination();
-        searchFrontier.Enqueue(tiles[tiles.Length / 2]);
+        if (searchFrontier.Count == 0)
+        {
+            return false;
+        }
 
         while(searchFrontier.Count > 0)
         {
@@ -95,6 +132,7 @@ public class GameBoard : MonoBehaviour
         {
             tile.ShowPath();
         }
+        return true;
     }
 
     /// <summary>

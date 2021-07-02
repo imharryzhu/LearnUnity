@@ -3,7 +3,8 @@
 public enum GameTileContentType
 {
     Empty, // 空格子
-    Destination // 目标格子
+    Destination, // 目标格子
+    Wall // 墙
 }
 
 public class GameTileContent : MonoBehaviour
